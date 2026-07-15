@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String @unique @db.VarChar(30)
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  fullName  String   @map("full_name") @db.VarChar(100)
+  email     String   @unique @db.VarChar(100)
+  phone     String?  @db.VarChar(20)
+  password  String   @db.VarChar(255)
+  avatar    String?  @db.Text
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  role              Role                 @relation(fields: [roleId], references: [id])
+  student           Student?
+  wardenHostels     Hostel[]             @relation("WardenHostel")
+  approvedLeaves    Leave[]              @relation("ApprovedBy")
+  assignedComplaints Complaint[]         @relation("AssignedTo")
+  markedAttendance  Attendance[]         @relation("MarkedBy")
+  complaintComments ComplaintComment[]
+  notifications     Notification[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Student {
+  id            String  @id @default(uuid()) @db.Uuid
+  userId        String  @unique @map("user_id") @db.Uuid
+  enrollmentNo  String? @unique @map("enrollment_no") @db.VarChar(50)
+  course        String? @db.VarChar(100)
+  department    String? @db.VarChar(100)
+  year          Int?
+  gender        String? @db.VarChar(20)
+  dob           DateTime? @db.Date
+  guardianName  String? @map("guardian_name") @db.VarChar(100)
+  guardianPhone String? @map("guardian_phone") @db.VarChar(20)
+  address       String? @db.Text
+  bloodGroup    String? @map("blood_group") @db.VarChar(10)
+
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications     Application[]
+  allocations      Allocation[]
+  payments         Payment[]
+  attendances      Attendance[]
+  leaves           Leave[]
+  visitors         Visitor[]
+  complaints       Complaint[]
+  mealAttendances  MealAttendance[]
+  documents        Document[]
+
+  @@map("students")
+}
+
+model Hostel {
+  id         String @id @default(uuid()) @db.Uuid
+  hostelName String @map("hostel_name") @db.VarChar(100)
+  hostelType String? @map("hostel_type") @db.VarChar(20)
+  gender     String? @db.VarChar(20)
+  capacity   Int?
+  address    String? @db.Text
+  wardenId   String? @map("warden_id") @db.Uuid
+
+  warden       User?          @relation("WardenHostel", fields: [wardenId], references: [id])
+  rooms        Room[]
+  applications Application[]
+
+  @@map("hostels")
+}
+
+model Room {
+  id         String  @id @default(uuid()) @db.Uuid
+  hostelId   String  @map("hostel_id") @db.Uuid
+  roomNumber String  @map("room_number") @db.VarChar(20)
+  floor      Int?
+  roomType   String? @map("room_type") @db.VarChar(30)
+  capacity   Int?
+  occupied   Int     @default(0)
+  price      Decimal? @db.Decimal(10, 2)
+  status     String  @default("AVAILABLE") @db.VarChar(20)
+
+  hostel      Hostel       @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  allocations Allocation[]
+
+  @@index([hostelId])
+  @@map("rooms")
+}
+
+model Application {
+  id                String   @id @default(uuid()) @db.Uuid
+  studentId         String   @map("student_id") @db.Uuid
+  hostelId          String   @map("hostel_id") @db.Uuid
+  preferredRoomType String?  @map("preferred_room_type") @db.VarChar(30)
+  reason            String?  @db.Text
+  status            String   @default("PENDING") @db.VarChar(20)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  student Student @relation(fields: [studentId], references: [id])
+  hostel  Hostel  @relation(fields: [hostelId], references: [id])
+
+  @@map("applications")
+}
+
+model Allocation {
+  id            String   @id @default(uuid()) @db.Uuid
+  studentId     String   @map("student_id") @db.Uuid
+  roomId        String   @map("room_id") @db.Uuid
+  allocatedDate DateTime? @map("allocated_date") @db.Date
+  checkIn       DateTime? @map("check_in") @db.Date
+  checkOut      DateTime? @map("check_out") @db.Date
+  status        String   @default("ACTIVE") @db.VarChar(20)
+
+  student Student @relation(fields: [studentId], references: [id])
+  room    Room    @relation(fields: [roomId], references: [id])
+
+  @@index([studentId])
+  @@map("allocations")
+}
+
+model FeeHead {
+  id          String  @id @default(uuid()) @db.Uuid
+  feeName     String  @map("fee_name") @db.VarChar(100)
+  amount      Decimal @db.Decimal(10, 2)
+  description String? @db.Text
+
+  payments Payment[]
+
+  @@map("fee_heads")
+}
+
+model Payment {
+  id            String    @id @default(uuid()) @db.Uuid
+  studentId     String    @map("student_id") @db.Uuid
+  feeHeadId     String    @map("fee_head_id") @db.Uuid
+  amount        Decimal   @db.Decimal(10, 2)
+  paymentMethod String?   @map("payment_method") @db.VarChar(30)
+  transactionId String?   @map("transaction_id") @db.VarChar(100)
+  status        String?   @db.VarChar(20)
+  dueDate       DateTime? @map("due_date") @db.Date
+  paidAt        DateTime? @map("paid_at")
+
+  student Student @relation(fields: [studentId], references: [id])
+  feeHead FeeHead @relation(fields: [feeHeadId], references: [id])
+
+  @@index([studentId])
+  @@map("payments")
+}
+
+model Attendance {
+  id             String    @id @default(uuid()) @db.Uuid
+  studentId      String    @map("student_id") @db.Uuid
+  attendanceDate DateTime? @map("attendance_date") @db.Date
+  checkIn        String?   @map("check_in") @db.Time
+  checkOut       String?   @map("check_out") @db.Time
+  status         String?   @db.VarChar(20)
+  markedBy       String?   @map("marked_by") @db.Uuid
+
+  student  Student @relation(fields: [studentId], references: [id])
+  markedByUser User? @relation("MarkedBy", fields: [markedBy], references: [id])
+
+  @@index([studentId])
+  @@map("attendance")
+}
+
+model Leave {
+  id         String   @id @default(uuid()) @db.Uuid
+  studentId  String   @map("student_id") @db.Uuid
+  fromDate   DateTime? @map("from_date") @db.Date
+  toDate     DateTime? @map("to_date") @db.Date
+  reason     String?  @db.Text
+  approvedBy String?  @map("approved_by") @db.Uuid
+  status     String   @default("PENDING") @db.VarChar(20)
+
+  student    Student @relation(fields: [studentId], references: [id])
+  approvedByUser User? @relation("ApprovedBy", fields: [approvedBy], references: [id])
+
+  @@index([studentId])
+  @@map("leaves")
+}
+
+model Visitor {
+  id          String    @id @default(uuid()) @db.Uuid
+  studentId   String    @map("student_id") @db.Uuid
+  visitorName String    @map("visitor_name") @db.VarChar(100)
+  relation    String?   @db.VarChar(50)
+  phone       String?   @db.VarChar(20)
+  entryTime   DateTime? @map("entry_time")
+  exitTime    DateTime? @map("exit_time")
+  status      String?   @db.VarChar(20)
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@map("visitors")
+}
+
+model Complaint {
+  id          String   @id @default(uuid()) @db.Uuid
+  studentId   String   @map("student_id") @db.Uuid
+  category    String?  @db.VarChar(50)
+  title       String?  @db.VarChar(150)
+  description String?  @db.Text
+  priority    String?  @db.VarChar(20)
+  assignedTo  String?  @map("assigned_to") @db.Uuid
+  status      String   @default("OPEN") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  student    Student            @relation(fields: [studentId], references: [id])
+  assignedToUser User?          @relation("AssignedTo", fields: [assignedTo], references: [id])
+  comments   ComplaintComment[]
+
+  @@index([studentId])
+  @@map("complaints")
+}
+
+model ComplaintComment {
+  id          String   @id @default(uuid()) @db.Uuid
+  complaintId String   @map("complaint_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("complaint_comments")
+}
+
+model MessMenu {
+  id       String   @id @default(uuid()) @db.Uuid
+  mealDate DateTime? @map("meal_date") @db.Date
+  mealType String?  @map("meal_type") @db.VarChar(30)
+  menu     String?  @db.Text
+  notes    String?  @db.Text
+
+  mealAttendances MealAttendance[]
+
+  @@map("mess_menu")
+}
+
+model MealAttendance {
+  id        String @id @default(uuid()) @db.Uuid
+  studentId String @map("student_id") @db.Uuid
+  menuId    String @map("menu_id") @db.Uuid
+  status    String? @db.VarChar(20)
+
+  student Student @relation(fields: [studentId], references: [id])
+  menu    MessMenu @relation(fields: [menuId], references: [id])
+
+  @@map("meal_attendance")
+}
+
+model Inventory {
+  id               String   @id @default(uuid()) @db.Uuid
+  itemName         String   @map("item_name") @db.VarChar(100)
+  quantity         Int?
+  availableQuantity Int?    @map("available_quantity")
+  itemCondition    String?  @map("item_condition") @db.VarChar(30)
+  lastUpdated      DateTime @default(now()) @map("last_updated")
+
+  @@map("inventory")
+}
+
+model Document {
+  id           String   @id @default(uuid()) @db.Uuid
+  studentId    String   @map("student_id") @db.Uuid
+  documentType String?  @map("document_type") @db.VarChar(50)
+  fileName     String?  @map("file_name") @db.VarChar(150)
+  fileUrl      String?  @map("file_url") @db.Text
+  uploadedAt   DateTime @default(now()) @map("uploaded_at")
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@map("documents")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String?  @db.VarChar(150)
+  message   String?  @db.Text
+  type      String?  @db.VarChar(30)
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}

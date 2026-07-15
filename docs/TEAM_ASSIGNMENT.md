@@ -1,295 +1,142 @@
 # HostelFlow — Team Assignment
 
+## Database Schema (Simplified)
+
+**Connection:** `postgresql://neondb_owner:npg_ijEzSd7hJ1ny@ep-wild-haze-az6z86fa-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require`
+
+19 tables: `roles`, `users`, `students`, `hostels`, `rooms`, `applications`, `allocations`, `fee_heads`, `payments`, `attendance`, `leaves`, `visitors`, `complaints`, `complaint_comments`, `mess_menu`, `meal_attendance`, `inventory`, `documents`, `notifications`
+
+---
+
 ## Member 1: Backend (API + Database)
 **Location:** `services/api/`
 
-### Responsibilities
-- Prisma schema (all 25+ models)
-- Express server setup with all middleware
-- Authentication module (JWT, OTP, RBAC)
-- All 23 API modules (routes, controllers, services)
-- Database seed script
-- Swagger documentation
-- Email/SMS/Push notification integrations
-- File upload (Cloudinary)
-- Payments (Razorpay)
-- Socket.IO realtime events
-- Jest integration tests
+### Tasks
+1. Prisma schema (`prisma/schema.prisma`) — 19 models matching the SQL
+2. Express server with middleware (CORS, Helmet, rate limit, error handler)
+3. Auth module — register, login, JWT, refresh tokens
+4. Users + Roles CRUD
+5. Students CRUD
+6. Hostels CRUD
+7. Rooms CRUD (with occupied/slots tracking)
+8. Applications module — create, approve, reject
+9. Allocations module — allocate room, check-in, check-out
+10. Payments module — fee heads, payments, Razorpay integration
+11. Attendance module — mark, bulk, history
+12. Leaves module — apply, approve, reject
+13. Visitors module — log entry/exit
+14. Complaints module — CRUD, assign, comment thread
+15. Mess module — menu, meal attendance
+16. Inventory module — items, quantities
+17. Documents module — upload, list
+18. Notifications module — list, mark read
+19. Dashboard stats endpoint
+20. Reports endpoint
+21. Database seed script
 
-### Files to create
+**Files to create:**
 ```
-services/api/
-├── prisma/
-│   ├── schema.prisma
-│   └── seed.ts
-├── src/
-│   ├── index.ts
-│   ├── app.ts
-│   ├── routes.ts
-│   ├── config/
-│   │   ├── env.ts
-│   │   ├── database.ts
-│   │   ├── swagger.ts
-│   │   └── socket.ts
-│   ├── middleware/
-│   │   ├── auth.ts
-│   │   ├── errorHandler.ts
-│   │   ├── validate.ts
-│   │   ├── upload.ts
-│   │   └── audit.ts
-│   ├── utils/
-│   │   ├── jwt.ts
-│   │   ├── password.ts
-│   │   ├── logger.ts
-│   │   ├── email.ts
-│   │   └── helpers.ts
-│   └── modules/
-│       ├── auth/          (register, login, refresh, OTP, forgot/reset password)
-│       ├── users/         (CRUD, roles, permissions)
-│       ├── students/      (CRUD, search, filter)
-│       ├── hostels/       (CRUD, assign warden)
-│       ├── buildings/     (CRUD)
-│       ├── floors/        (CRUD)
-│       ├── rooms/         (CRUD)
-│       ├── beds/          (CRUD)
-│       ├── applications/  (apply, approve, reject)
-│       ├── allocations/   (allocate, transfer, check-out)
-│       ├── payments/      (create, refund, Razorpay webhook)
-│       ├── attendance/    (mark, bulk, reports)
-│       ├── leaves/        (apply, approve, reject)
-│       ├── visitors/      (request, approve)
-│       ├── complaints/    (create, assign, resolve)
-│       ├── mess/          (menu CRUD, meal attendance)
-│       ├── inventory/     (items CRUD)
-│       ├── announcements/ (CRUD)
-│       ├── notifications/ (list, mark read)
-│       ├── dashboard/     (stats for admin/warden/student)
-│       ├── reports/       (revenue, occupancy, attendance)
-│       ├── documents/     (upload, list)
-│       ├── settings/      (system settings)
-│       └── maintenance/   (requests CRUD)
-└── tests/
-    └── *.test.ts
+prisma/schema.prisma, seed.ts
+src/index.ts, app.ts, routes.ts
+src/config/ (env, database, swagger, socket)
+src/middleware/ (auth, errorHandler, validate, upload, audit)
+src/utils/ (jwt, password, logger, email, helpers)
+src/modules/*/ (routes, controller, service per module)
+tests/*.test.ts
 ```
 
 ---
 
-## Member 2: Admin Web
+## Member 2: Admin Web (React 19 + Vite + TailwindCSS)
 **Location:** `apps/admin-web/`
 
-### Responsibilities
-- React 19 + Vite + TypeScript setup
-- TailwindCSS + Shadcn UI component library
-- All 25+ pages (Dashboard, Students, Hostels, etc.)
-- TanStack Query for API calls
-- TanStack Table for data tables
-- Zustand for state management
-- React Router + React Hook Form + Zod
-- Framer Motion animations
-- Recharts for analytics
-- Dark/Light mode
-- Responsive layout with Sidebar + Top Navbar
-- Global search
+### Pages
+- **Auth:** Login, Forgot Password
+- **Dashboard:** Stats cards, charts, recent activity
+- **Students:** List with search/filter, detail, create/edit form
+- **Hostels:** List, detail, create/edit form
+- **Rooms:** List per hostel, detail, create/edit
+- **Applications:** List with status filter, approve/reject actions
+- **Allocations:** List, create allocation wizard
+- **Payments:** Fee heads, payments list, invoices
+- **Attendance:** Calendar view, mark attendance form
+- **Leaves:** List, approve/reject
+- **Visitors:** List with log entry/exit
+- **Complaints:** List, detail with comment thread
+- **Mess:** Menu editor, meal attendance
+- **Inventory:** Items list, CRUD
+- **Reports:** Revenue, occupancy, attendance
+- **Users:** User list, role management
+- **Profile:** View/edit profile
 
-### Pages to build
-```
-admin-web/src/pages/
-├── Dashboard/
-│   ├── index.tsx
-│   ├── Widgets.tsx
-│   ├── Charts.tsx
-│   └── RecentActivity.tsx
-├── Students/
-│   ├── StudentList.tsx
-│   ├── StudentDetail.tsx
-│   └── StudentForm.tsx
-├── Hostels/
-│   ├── HostelList.tsx
-│   ├── HostelDetail.tsx
-│   └── HostelForm.tsx
-├── Buildings/
-│   ├── BuildingList.tsx
-│   └── BuildingForm.tsx
-├── Floors/
-│   ├── FloorList.tsx
-│   └── FloorForm.tsx
-├── Rooms/
-│   ├── RoomList.tsx
-│   ├── RoomDetail.tsx
-│   └── RoomForm.tsx
-├── Beds/
-│   ├── BedList.tsx
-│   └── BedForm.tsx
-├── Applications/
-│   ├── ApplicationList.tsx
-│   └── ApplicationDetail.tsx
-├── Allocations/
-│   ├── AllocationList.tsx
-│   └── AllocationForm.tsx
-├── Payments/
-│   ├── PaymentList.tsx
-│   ├── PaymentDetail.tsx
-│   └── InvoiceList.tsx
-├── Attendance/
-│   ├── AttendanceList.tsx
-│   └── MarkAttendance.tsx
-├── Visitors/
-│   └── VisitorList.tsx
-├── Complaints/
-│   ├── ComplaintList.tsx
-│   └── ComplaintDetail.tsx
-├── Inventory/
-│   └── InventoryList.tsx
-├── Mess/
-│   ├── MessMenu.tsx
-│   └── MealAttendance.tsx
-├── Reports/
-│   ├── RevenueReport.tsx
-│   ├── OccupancyReport.tsx
-│   └── AttendanceReport.tsx
-├── Settings/
-│   ├── GeneralSettings.tsx
-│   ├── FeeSettings.tsx
-│   └── NotificationSettings.tsx
-├── Users/
-│   ├── UserList.tsx
-│   └── UserForm.tsx
-├── Roles/
-│   ├── RoleList.tsx
-│   └── RoleForm.tsx
-├── AuditLogs/
-│   └── AuditLogList.tsx
-├── Profile/
-│   └── ProfilePage.tsx
-├── Auth/
-│   ├── Login.tsx
-│   └── ForgotPassword.tsx
-└── NotFound.tsx
-```
+**Tech:** React 19, Vite, TypeScript, TailwindCSS, Shadcn UI, TanStack Query/Table, Zustand, React Router, React Hook Form, Zod, Framer Motion, Recharts
 
 ---
 
-## Member 3: Student Mobile App
+## Member 3: Student Mobile (React Native + Expo)
 **Location:** `apps/student-mobile/`
 
-### Responsibilities
-- React Native + Expo + TypeScript setup
-- Expo Router for navigation
-- React Query for API calls
-- NativeWind (TailwindCSS for RN)
-- Zustand for state
-- All student-facing screens
+### Screens
+- **Auth:** Login, Register
+- **Dashboard:** Overview with room info, attendance %, dues
+- **Hostel Application:** Apply for hostel, check status
+- **Room Details:** View allocated room
+- **Attendance:** History, monthly stats
+- **Leave:** Apply, status tracking
+- **Complaint:** Create, track status
+- **Visitor:** Request visitor entry
+- **Payments:** Pay fees, view invoices
+- **Mess Menu:** Weekly menu
+- **Notifications:** List
+- **Profile:** Edit info, documents
+- **Emergency SOS:** Alert warden
 
-### Screens to build
-```
-student-mobile/src/app/
-├── (auth)/
-│   ├── login.tsx
-│   ├── register.tsx
-│   ├── verify-otp.tsx
-│   └── forgot-password.tsx
-├── (tabs)/
-│   ├── _layout.tsx
-│   ├── index.tsx          (Dashboard)
-│   ├── attendance.tsx
-│   ├── payments.tsx
-│   └── profile.tsx
-├── hostel-application.tsx
-├── room-details.tsx
-├── leave-request.tsx
-├── leave-status.tsx
-├── complaint.tsx
-├── complaint-status.tsx
-├── visitor-request.tsx
-├── invoices.tsx
-├── invoice-detail.tsx
-├── mess-menu.tsx
-├── notifications.tsx
-├── emergency-sos.tsx
-├── documents.tsx
-├── edit-profile.tsx
-└── settings.tsx
-```
+**Tech:** Expo, TypeScript, Expo Router, React Query, Axios, NativeWind, Zustand
 
 ---
 
-## Member 4: Warden Mobile App
+## Member 4: Warden Mobile (React Native + Expo)
 **Location:** `apps/warden-mobile/`
 
-### Responsibilities
-- React Native + Expo + TypeScript setup
-- Expo Router for navigation
-- React Query for API calls
-- NativeWind (TailwindCSS for RN)
-- Zustand for state
-- QR scanner integration
-- All warden-facing screens
+### Screens
+- **Auth:** Login
+- **Dashboard:** Today stats, pending approvals
+- **Attendance:** List today, mark manually
+- **Visitor Approvals:** Approve/reject entry
+- **Leave Approvals:** Approve/reject requests
+- **Complaints:** List, assign, resolve
+- **Room Allocation:** Assign rooms to students
+- **Student Search:** Search by name/room
+- **Announcements:** Create, list
+- **Emergency Alerts:** Send/view alerts
+- **Reports:** Quick stats
+- **Profile:** Edit info
 
-### Screens to build
-```
-warden-mobile/src/app/
-├── (auth)/
-│   ├── login.tsx
-│   └── forgot-password.tsx
-├── (tabs)/
-│   ├── _layout.tsx
-│   ├── index.tsx          (Dashboard)
-│   ├── attendance.tsx
-│   ├── complaints.tsx
-│   └── profile.tsx
-├── qr-scanner.tsx
-├── visitor-approvals.tsx
-├── visitor-detail.tsx
-├── leave-requests.tsx
-├── leave-detail.tsx
-├── complaint-detail.tsx
-├── room-allocation.tsx
-├── student-search.tsx
-├── student-detail.tsx
-├── announcements.tsx
-├── announcement-create.tsx
-├── emergency-alerts.tsx
-├── reports.tsx
-├── report-detail.tsx
-├── edit-profile.tsx
-└── settings.tsx
-```
+**Tech:** Expo, TypeScript, Expo Router, React Query, Axios, NativeWind, Zustand
 
 ---
 
-## Convention Guide for All Members
+## Shared Packages (All Members)
 
-### API Client (Admin Web & Mobile Apps)
-Use Axios with base URL from env:
-```
-const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
-});
-```
-Attach JWT: `api.defaults.headers.common['Authorization'] = Bearer ${token}`
+### @hostelflow/types
+TypeScript interfaces for all 19 models + API responses
 
-### Shared Packages (created first, available to all)
-- `@hostelflow/types` — All TypeScript interfaces, enums, types
-- `@hostelflow/shared` — Zod validation schemas, constants, utilities
-- `@hostelflow/config` — Environment config loader
-- `@hostelflow/ui` — Reusable React UI components (Button, Card, Input, Badge, Spinner)
+### @hostelflow/shared
+Zod validations, constants (status enums, categories), utility functions
 
-### Git Workflow
+### @hostelflow/config
+Environment config loader
+
+### @hostelflow/ui
+Reusable components: Button, Card, Input, Badge, Spinner
+
+---
+
+## Git Workflow
+
 ```bash
-git checkout -b feat/module-name   # feature branch
-git commit -m "feat: description"   # conventional commits
+git checkout -b feat/module-name   # branch per issue
+git commit -m "feat: description"
 git push origin feat/module-name
+# Create PR on GitHub → merge to master
 ```
-
-### File Naming
-- `*.ts` for plain TypeScript
-- `*.tsx` for React components
-- kebab-case for directories, PascalCase for components
-- One component per file
-
-### Code Style
-- Strict TypeScript (no `any` where possible)
-- Named exports preferred
-- Arrow functions for components
-- TailwindCSS classes (no separate CSS files)
-- All text in English
