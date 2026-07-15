@@ -1,0 +1,35 @@
+{
+  "name": "hostelflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise Hostel Management Platform",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo clean && rm -rf node_modules",
+    "db:migrate": "cd services/api && npx prisma migrate dev",
+    "db:push": "cd services/api && npx prisma db push",
+    "db:seed": "cd services/api && npx prisma db seed",
+    "db:studio": "cd services/api && npx prisma studio",
+    "api:dev": "cd services/api && npm run dev",
+    "api:build": "cd services/api && npm run build",
+    "admin:dev": "cd apps/admin-web && npm run dev",
+    "admin:build": "cd apps/admin-web && npm run build",
+    "student:dev": "cd apps/student-mobile && npx expo start",
+    "warden:dev": "cd apps/warden-mobile && npx expo start"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "prettier": "^3.2.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
