@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "HostelFlow Warden",
+    "slug": "hostelflow-warden",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "https://cdn-icons-png.flaticon.com/512/3214/3214754.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.hostelflow.warden"
+    },
+    "platforms": ["ios", "android", "web"]
+  }
+}
