@@ -1,25 +1,54 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../utils/asyncHandler';
-import { sendSuccess, sendPaginated } from '../../utils/apiResponse';
-import * as service from './auth.service';
+import { sendSuccess } from '../../utils/apiResponse';
+import * as authService from './auth.service';
 
-export const list = asyncHandler(async (req: Request, res: Response) => {
-  const result = await service.list(req.query);
-  sendPaginated(res, result.data, result.total, Number(req.query.page) || 1, Number(req.query.limit) || 10);
+export const register = asyncHandler(async (req: Request, res: Response) => {
+  const result = await authService.register(req.body);
+  sendSuccess(res, result, 'Registration successful', 201);
 });
-export const getById = asyncHandler(async (req: Request, res: Response) => {
-  const data = await service.getById(req.params.id);
-  sendSuccess(res, data);
+
+export const login = asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  const result = await authService.login(email, password);
+  sendSuccess(res, result, 'Login successful');
 });
-export const create = asyncHandler(async (req: Request, res: Response) => {
-  const data = await service.create(req.body);
-  sendSuccess(res, data, 'Created successfully', 201);
+
+export const refreshToken = asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken: token } = req.body;
+  const result = await authService.refreshToken(token);
+  sendSuccess(res, result, 'Token refreshed');
 });
-export const update = asyncHandler(async (req: Request, res: Response) => {
-  const data = await service.update(req.params.id, req.body);
-  sendSuccess(res, data, 'Updated successfully');
+
+export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+  const result = await authService.getProfile(req.user!.userId);
+  sendSuccess(res, result);
 });
-export const remove = asyncHandler(async (req: Request, res: Response) => {
-  await service.remove(req.params.id);
-  sendSuccess(res, null, 'Deleted successfully', 204);
+
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  const result = await authService.forgotPassword(req.body.email);
+  sendSuccess(res, result, 'Reset link sent if email exists');
+});
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { token, password } = req.body;
+  const result = await authService.resetPassword(token, password);
+  sendSuccess(res, result, 'Password reset successfully');
+});
+
+export const changePassword = asyncHandler(async (req: Request, res: Response) => {
+  const { oldPassword, newPassword } = req.body;
+  const result = await authService.changePassword(req.user!.userId, oldPassword, newPassword);
+  sendSuccess(res, result, 'Password changed successfully');
+});
+
+export const sendOtp = asyncHandler(async (req: Request, res: Response) => {
+  const result = await authService.sendOtp(req.body.email);
+  sendSuccess(res, result, 'OTP sent if email exists');
+});
+
+export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+  const result = await authService.verifyOtp(email, otp);
+  sendSuccess(res, result, 'OTP verified');
 });

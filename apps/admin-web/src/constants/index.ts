@@ -1,5 +1,5 @@
 export const APP_NAME = 'HostelFlow';
-export const API_BASE_URL = 'http://localhost:5000/api';
+export const API_BASE_URL = 'http://localhost:4000/api/v1';
 export const MOCK_DELAY = 400;
 
 export const STORAGE_KEYS = {

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { User, UserRole } from '../types';
 import { authService } from '../services/auth.service';
+import { setAuthToken } from '../api/client';
 import { STORAGE_KEYS } from '../constants';
 
 interface AuthContextType {
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         sessionStorage.removeItem(STORAGE_KEYS.SESSION_EXPIRY);
       } else {
         setToken(savedToken);
+        setAuthToken(savedToken);
         setUser(JSON.parse(savedUser));
       }
     }
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { user: loggedInUser, token: newToken } = res.data;
     setUser(loggedInUser);
     setToken(newToken);
+    setAuthToken(newToken);
 
     const storage = rememberMe ? localStorage : sessionStorage;
     storage.setItem(STORAGE_KEYS.USER, newToken);
@@ -68,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    setAuthToken(null);
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem('hostelflow_user_data');
     localStorage.removeItem(STORAGE_KEYS.SESSION_EXPIRY);
