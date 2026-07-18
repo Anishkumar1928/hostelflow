@@ -1,6 +1,7 @@
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Home, ClipboardCheck, AlertTriangle, Users } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors } from '../theme';
 
 interface BottomNavBarProps {
   activeTab: 'home' | 'attendance' | 'complaints' | 'visitors';
@@ -9,7 +10,7 @@ interface BottomNavBarProps {
 
 export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarProps) {
   const insets = useSafeAreaInsets();
-  
+
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'attendance', label: 'Attendance', icon: ClipboardCheck },
@@ -18,11 +19,8 @@ export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarPro
   ] as const;
 
   return (
-    <View 
-      className="absolute bottom-0 left-0 w-full flex-row justify-around items-center px-4 bg-white border-t border-outline-variant z-50 shadow-sm"
-      style={{ paddingBottom: Math.max(insets.bottom, 16), paddingTop: 16 }}
-    >
-      <View className="flex-row w-full max-w-lg justify-around items-center mx-auto">
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+      <View style={styles.inner}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -31,20 +29,14 @@ export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarPro
             <TouchableOpacity
               key={item.id}
               onPress={() => onTabChange(item.id)}
-              className={`flex flex-col items-center justify-center rounded-full ${
-                isActive ? 'bg-secondary-container px-5 py-2' : 'px-4 py-2'
-              }`}
+              style={[styles.tab, isActive && styles.activeTab]}
             >
-              <Icon 
-                color={isActive ? '#151c27' : '#5e6572'} 
-                strokeWidth={isActive ? 2.5 : 2} 
-                size={20} 
+              <Icon
+                color={isActive ? colors.onSecondaryContainer : colors.onSurfaceVariant}
+                strokeWidth={isActive ? 2.5 : 2}
+                size={20}
               />
-              <Text 
-                className={`text-xs mt-1 font-sans ${
-                  isActive ? 'text-on-secondary-container font-semibold' : 'text-on-surface-variant'
-                }`}
-              >
+              <Text style={[styles.label, isActive && styles.activeLabel]}>
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -54,3 +46,49 @@ export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarPro
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    backgroundColor: colors.surfaceContainerLowest,
+    borderTopWidth: 1,
+    borderTopColor: colors.outlineVariant,
+    zIndex: 50,
+  },
+  inner: {
+    flexDirection: 'row',
+    width: '100%',
+    maxWidth: 600,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  tab: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 9999,
+  },
+  activeTab: {
+    backgroundColor: colors.secondaryContainer,
+    paddingHorizontal: 20,
+  },
+  label: {
+    fontSize: 12,
+    marginTop: 4,
+    color: colors.onSurfaceVariant,
+  },
+  activeLabel: {
+    color: colors.onSecondaryContainer,
+    fontWeight: '600',
+  },
+});

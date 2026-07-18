@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { CheckCircle, XCircle, Calendar, Search, Check, HelpCircle, CalendarRange, ListTodo, Sparkles, Server } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { CheckCircle, XCircle, Calendar, Search, Check, CalendarRange, ListTodo, Server } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Student, AttendanceRecord, AttendanceStatus } from '../types';
 import { INITIAL_ATTENDANCE_HISTORY } from '../data';
-import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
+import { colors } from '../theme';
 
 interface AttendanceViewProps {
   students: Student[];
@@ -12,16 +12,14 @@ interface AttendanceViewProps {
   onSubmitAllAttendance: (stats: { present: number; absent: number; leave: number }) => void;
 }
 
-export default function AttendanceView({
-  students,
-  onUpdateAttendance,
-  onSubmitAllAttendance
-}: AttendanceViewProps) {
+const WARDEN_AVATAR = "https://lh3.googleusercontent.com/aida-public/AB6AXuBDEdu7lEzmYHPpgTbjCtiHm-2o-_6nQScBNjiCU7UgNjePWPBd1dUAOFCZtq8mkqBwIHvpBhanpTfidPwhfw3OIE4ER0hNrT6JUnmP3X3qY0g8Iczg-gh6_nLvM0kpTQF5CFmdpRyAE4Wc1yMG6i1lNFKWKVwO-AnE1rGjUXwEMkt1QFckRjeEBSjScPyVKJPB1Wln7F3bZP8Ae8i8nY-fO3b4lV_opft-OewcP_GomKamepnzLHAO";
+
+export default function AttendanceView({ students, onUpdateAttendance, onSubmitAllAttendance }: AttendanceViewProps) {
   const [activeTab, setActiveTab] = useState<'mark' | 'history'>('mark');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  
+
   const [history, setHistory] = useState<AttendanceRecord[]>(INITIAL_ATTENDANCE_HISTORY);
 
   useEffect(() => {
@@ -29,16 +27,14 @@ export default function AttendanceView({
       try {
         const saved = await AsyncStorage.getItem('hf_attendance_history');
         if (saved) setHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     };
     loadHistory();
   }, []);
 
-  const filteredStudents = students.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.room.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.room.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -49,14 +45,10 @@ export default function AttendanceView({
   const handleAttendanceSubmit = () => {
     const unassignedCount = students.filter(s => s.attendanceStatus === undefined).length;
     if (unassignedCount > 0) {
-      Alert.alert(
-        "Unmarked Students",
-        `There are ${unassignedCount} students without any attendance marked. Submit anyway?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Submit", onPress: executeSubmit }
-        ]
-      );
+      Alert.alert("Unmarked Students", `There are ${unassignedCount} students without any attendance marked. Submit anyway?`, [
+        { text: "Cancel", style: "cancel" },
+        { text: "Submit", onPress: executeSubmit }
+      ]);
     } else {
       executeSubmit();
     }
@@ -64,256 +56,200 @@ export default function AttendanceView({
 
   const executeSubmit = () => {
     setIsSubmitting(true);
-
-    let present = 0;
-    let absent = 0;
-    let leave = 0;
-
+    let present = 0, absent = 0, leave = 0;
     students.forEach(s => {
       if (s.attendanceStatus === 'present') present++;
       else if (s.attendanceStatus === 'absent') absent++;
       else if (s.attendanceStatus === 'leave') leave++;
-      else present++; 
+      else present++;
     });
 
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitSuccess(true);
-
       const today = new Date();
-      const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-      const formattedDate = today.toLocaleDateString('en-GB', options);
-
-      const newRecord: AttendanceRecord = {
-        date: formattedDate,
-        present: 1248 - absent - leave,
-        absent,
-        leave
-      };
-
+      const formattedDate = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const newRecord: AttendanceRecord = { date: formattedDate, present: 1248 - absent - leave, absent, leave };
       const updatedHistory = [newRecord, ...history];
       setHistory(updatedHistory);
       AsyncStorage.setItem('hf_attendance_history', JSON.stringify(updatedHistory)).catch(console.error);
-
       onSubmitAllAttendance({ present, absent, leave });
-
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 2000);
-
+      setTimeout(() => setSubmitSuccess(false), 2000);
     }, 1500);
   };
 
-  const femaleWardenSeniorPortrait = "https://lh3.googleusercontent.com/aida-public/AB6AXuBDEdu7lEzmYHPpgTbjCtiHm-2o-_6nQScBNjiCU7UgNjePWPBd1dUAOFCZtq8mkqBwIHvpBhanpTfidPwhfw3OIE4ER0hNrT6JUnmP3X3qY0g8Iczg-gh6_nLvM0kpTQF5CFmdpRyAE4Wc1yMG6i1lNFKWKVwO-AnE1rGjUXwEMkt1QFckRjeEBSjScPyVKJPB1Wln7F3bZP8Ae8i8nY-fO3b4lV_opft-OewcP_GomKamepnzLHAO";
-
   return (
-    <View className="flex-1 bg-background">
-      <View className="flex-row items-center justify-between px-4 h-16 bg-white border-b border-outline-variant shadow-sm z-40">
-        <View className="flex-row items-center gap-3">
-          <View className="w-10 h-10 rounded-full overflow-hidden border border-outline-variant bg-surface-variant">
-            <Image 
-              style={{ width: '100%', height: '100%' }}
-              source={{ uri: femaleWardenSeniorPortrait }}
-            />
+    <View style={styles.screen}>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <View style={styles.avatarContainer}>
+            <Image style={styles.avatar} source={{ uri: WARDEN_AVATAR }} />
           </View>
-          <Text className="text-xl font-bold font-sans tracking-tight text-primary">Attendance</Text>
+          <Text style={styles.headerTitle}>Attendance</Text>
         </View>
-        <TouchableOpacity 
-          className="w-10 h-10 items-center justify-center rounded-full bg-surface-container-low"
+        <TouchableOpacity
+          style={styles.headerBtn}
           onPress={() => Alert.alert("Status", "Daily Attendance Service Status: ONLINE. Ready to submit.")}
         >
-          <Server size={24} color="#004ac6" />
+          <Server size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-      >
-        <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 120, paddingTop: 16 }}>
-          
-          <View className="mb-4">
-            <View className="flex-row p-1 bg-surface-container rounded-xl self-start">
-              <TouchableOpacity 
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+          <View style={styles.tabBar}>
+            <View style={styles.tabInner}>
+              <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setActiveTab('mark')}
-                className={`px-5 py-2.5 rounded-lg flex-row items-center justify-center ${
-                  activeTab === 'mark' ? 'bg-white shadow-sm' : ''
-                }`}
+                style={[styles.tab, activeTab === 'mark' && styles.tabActive]}
               >
-                <Text className={`text-xs font-bold ${activeTab === 'mark' ? 'text-primary' : 'text-on-surface-variant'}`}>Mark Attendance</Text>
+                <Text style={[styles.tabText, activeTab === 'mark' && styles.tabTextActive]}>Mark Attendance</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setActiveTab('history')}
-                className={`px-5 py-2.5 rounded-lg flex-row items-center justify-center ${
-                  activeTab === 'history' ? 'bg-white shadow-sm' : ''
-                }`}
+                style={[styles.tab, activeTab === 'history' && styles.tabActive]}
               >
-                <Text className={`text-xs font-bold ${activeTab === 'history' ? 'text-primary' : 'text-on-surface-variant'}`}>History</Text>
+                <Text style={[styles.tabText, activeTab === 'history' && styles.tabTextActive]}>History</Text>
               </TouchableOpacity>
             </View>
-
-            {activeTab === 'mark' && (
-              <View className="mt-4 flex-row items-center bg-white border border-outline-variant rounded-xl px-4 h-12">
-                <Search size={20} color="#737686" />
-                <TextInput 
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Search by student name or room number..."
-                  className="flex-1 ml-2 text-sm font-medium text-on-surface"
-                />
-              </View>
-            )}
           </View>
 
-          {activeTab === 'mark' ? (
-            <View className="space-y-3">
-              <View className="flex-row items-center justify-between px-1 mb-2">
-                <Text className="text-xs text-outline font-bold uppercase tracking-wider font-mono">Student Identity & Room</Text>
-                <Text className="text-xs text-outline font-bold uppercase tracking-wider font-mono">Roster Mark</Text>
-              </View>
+          {activeTab === 'mark' && (
+            <View style={styles.searchBar}>
+              <Search size={20} color={colors.outline} />
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Search by student name or room number..."
+                style={styles.searchInput}
+              />
+            </View>
+          )}
 
-              <View className="gap-3">
+          {activeTab === 'mark' ? (
+            <View>
+              <View style={styles.listHeader}>
+                <Text style={styles.listHeaderText}>Student Identity & Room</Text>
+                <Text style={styles.listHeaderText}>Roster Mark</Text>
+              </View>
+              <View style={styles.studentList}>
                 {filteredStudents.map((student) => {
                   const isPresent = student.attendanceStatus === 'present';
                   const isAbsent = student.attendanceStatus === 'absent';
                   const isLeave = student.attendanceStatus === 'leave';
-
                   return (
-                    <Animated.View 
-                      key={student.id}
-                      layout={Layout.springify()}
-                      entering={FadeIn}
-                      exiting={FadeOut}
-                      className="bg-white border border-outline-variant rounded-2xl p-4 shadow-sm"
-                    >
-                      <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center gap-3">
-                          <View className="w-12 h-12 rounded-full overflow-hidden border border-outline-variant bg-surface-variant">
-                            <Image 
-                              style={{ width: '100%', height: '100%' }}
-                              source={{ uri: student.avatar }}
-                            />
+                    <View key={student.id} style={styles.studentCard}>
+                      <View style={styles.studentCardHeader}>
+                        <View style={styles.studentInfo}>
+                          <View style={styles.studentAvatar}>
+                            <Image style={styles.studentAvatarImg} source={{ uri: student.avatar }} />
                           </View>
                           <View>
-                            <Text className="font-bold text-on-surface text-base tracking-tight">{student.name}</Text>
-                            <Text className="text-xs text-outline font-mono mt-0.5">{student.id}</Text>
+                            <Text style={styles.studentName}>{student.name}</Text>
+                            <Text style={styles.studentId}>{student.id}</Text>
                           </View>
                         </View>
-                        <View className="px-3 py-1.5 bg-surface-container rounded-lg">
-                          <Text className="font-bold text-xs text-primary">{student.room}</Text>
+                        <View style={styles.roomBadge}>
+                          <Text style={styles.roomBadgeText}>{student.room}</Text>
                         </View>
                       </View>
-
-                      <View className="flex-row items-center gap-2 pt-3 border-t border-outline-variant">
+                      <View style={styles.statusRow}>
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleStatusChange(student.id, 'present')}
-                          className={`flex-1 flex-row justify-center items-center gap-1.5 py-2.5 rounded-full border ${
-                            isPresent ? 'bg-green-100 border-green-600' : 'bg-white border-outline-variant'
-                          }`}
+                          style={[styles.statusBtn, isPresent && styles.statusPresentActive]}
                         >
-                          <CheckCircle size={16} color={isPresent ? '#15803d' : '#737686'} />
-                          <Text className={`text-xs font-bold ${isPresent ? 'text-green-800' : 'text-on-surface-variant'}`}>Present</Text>
+                          <CheckCircle size={16} color={isPresent ? '#15803d' : colors.outline} />
+                          <Text style={[styles.statusBtnText, isPresent && styles.statusPresentText]}>Present</Text>
                         </TouchableOpacity>
-
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleStatusChange(student.id, 'absent')}
-                          className={`flex-1 flex-row justify-center items-center gap-1.5 py-2.5 rounded-full border ${
-                            isAbsent ? 'bg-red-100 border-red-600' : 'bg-white border-outline-variant'
-                          }`}
+                          style={[styles.statusBtn, isAbsent && styles.statusAbsentActive]}
                         >
-                          <XCircle size={16} color={isAbsent ? '#b91c1c' : '#737686'} />
-                          <Text className={`text-xs font-bold ${isAbsent ? 'text-red-800' : 'text-on-surface-variant'}`}>Absent</Text>
+                          <XCircle size={16} color={isAbsent ? '#b91c1c' : colors.outline} />
+                          <Text style={[styles.statusBtnText, isAbsent && styles.statusAbsentText]}>Absent</Text>
                         </TouchableOpacity>
-
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleStatusChange(student.id, 'leave')}
-                          className={`flex-1 flex-row justify-center items-center gap-1.5 py-2.5 rounded-full border ${
-                            isLeave ? 'bg-yellow-100 border-yellow-600' : 'bg-white border-outline-variant'
-                          }`}
+                          style={[styles.statusBtn, isLeave && styles.statusLeaveActive]}
                         >
-                          <Calendar size={16} color={isLeave ? '#a16207' : '#737686'} />
-                          <Text className={`text-xs font-bold ${isLeave ? 'text-yellow-800' : 'text-on-surface-variant'}`}>Leave</Text>
+                          <Calendar size={16} color={isLeave ? '#a16207' : colors.outline} />
+                          <Text style={[styles.statusBtnText, isLeave && styles.statusLeaveText]}>Leave</Text>
                         </TouchableOpacity>
                       </View>
-                    </Animated.View>
+                    </View>
                   );
                 })}
               </View>
             </View>
           ) : (
-            <Animated.View entering={FadeIn} className="space-y-4">
-              <View className="flex-row items-center justify-between px-1 mb-4">
-                <View className="flex-row items-center gap-2">
-                  <CalendarRange size={20} color="#004ac6" />
-                  <Text className="text-lg font-bold text-on-surface">Previous Records</Text>
+            <View>
+              <View style={styles.historyHeader}>
+                <View style={styles.historyHeaderLeft}>
+                  <CalendarRange size={20} color={colors.primary} />
+                  <Text style={styles.historyTitle}>Previous Records</Text>
                 </View>
-                <View className="bg-surface-container px-2 py-1 rounded-md">
-                  <Text className="text-xs font-bold text-outline font-mono uppercase">Logs ({history.length})</Text>
+                <View style={styles.historyBadge}>
+                  <Text style={styles.historyBadgeText}>Logs ({history.length})</Text>
                 </View>
               </View>
-
-              <View className="gap-3">
+              <View style={styles.historyList}>
                 {history.map((record, index) => (
-                  <View key={index} className="bg-white border border-outline-variant rounded-2xl p-4 shadow-sm">
-                    <View className="flex-row items-center justify-between border-b border-outline-variant pb-2 mb-3">
-                      <View className="flex-row items-center gap-1">
-                        <ListTodo size={14} color="#004ac6" />
-                        <Text className="text-xs font-bold text-on-surface-variant font-mono">{record.date}</Text>
+                  <View key={index} style={styles.historyCard}>
+                    <View style={styles.historyCardHeader}>
+                      <View style={styles.historyDate}>
+                        <ListTodo size={14} color={colors.primary} />
+                        <Text style={styles.historyDateText}>{record.date}</Text>
                       </View>
-                      <View className="bg-primary/10 px-2.5 py-0.5 rounded-full">
-                        <Text className="text-[10px] text-primary font-extrabold uppercase tracking-wider">Verified</Text>
+                      <View style={styles.verifiedBadge}>
+                        <Text style={styles.verifiedBadgeText}>Verified</Text>
                       </View>
                     </View>
-
-                    <View className="flex-row gap-2">
-                      <View className="flex-1 p-2 bg-green-50 rounded-xl border border-green-100 items-center">
-                        <Text className="text-[10px] text-green-700 font-extrabold uppercase tracking-wide">Present</Text>
-                        <Text className="text-lg font-extrabold text-green-800">{record.present}</Text>
+                    <View style={styles.historyStats}>
+                      <View style={[styles.historyStat, { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }]}>
+                        <Text style={[styles.historyStatLabel, { color: '#166534' }]}>Present</Text>
+                        <Text style={[styles.historyStatNumber, { color: '#166534' }]}>{record.present}</Text>
                       </View>
-                      <View className="flex-1 p-2 bg-red-50 rounded-xl border border-red-100 items-center">
-                        <Text className="text-[10px] text-red-700 font-extrabold uppercase tracking-wide">Absent</Text>
-                        <Text className="text-lg font-extrabold text-red-800">{record.absent}</Text>
+                      <View style={[styles.historyStat, { backgroundColor: '#fef2f2', borderColor: '#fecaca' }]}>
+                        <Text style={[styles.historyStatLabel, { color: '#991b1b' }]}>Absent</Text>
+                        <Text style={[styles.historyStatNumber, { color: '#991b1b' }]}>{record.absent}</Text>
                       </View>
-                      <View className="flex-1 p-2 bg-yellow-50 rounded-xl border border-yellow-100 items-center">
-                        <Text className="text-[10px] text-yellow-700 font-extrabold uppercase tracking-wide">On Leave</Text>
-                        <Text className="text-lg font-extrabold text-yellow-800">{record.leave}</Text>
+                      <View style={[styles.historyStat, { backgroundColor: '#fefce8', borderColor: '#fef08a' }]}>
+                        <Text style={[styles.historyStatLabel, { color: '#854d0e' }]}>On Leave</Text>
+                        <Text style={[styles.historyStatNumber, { color: '#854d0e' }]}>{record.leave}</Text>
                       </View>
                     </View>
                   </View>
                 ))}
               </View>
-            </Animated.View>
+            </View>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Giant Submit Float Panel */}
       {activeTab === 'mark' && (
-        <View className="absolute bottom-6 right-4 z-40">
-          <TouchableOpacity 
+        <View style={styles.submitFloat}>
+          <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleAttendanceSubmit}
             disabled={isSubmitting || submitSuccess}
-            className={`px-6 py-4 rounded-full shadow-lg flex-row items-center justify-center gap-2 ${
-              submitSuccess ? 'bg-green-600' : isSubmitting ? 'bg-primary/80' : 'bg-primary'
-            }`}
+            style={[styles.submitBtn, submitSuccess ? { backgroundColor: colors.success } : isSubmitting ? { backgroundColor: 'rgba(0,74,198,0.8)' } : { backgroundColor: colors.primary }]}
           >
             {isSubmitting ? (
-              <Text className="text-white font-bold text-xs uppercase tracking-widest">Processing...</Text>
+              <Text style={styles.submitBtnText}>Processing...</Text>
             ) : submitSuccess ? (
               <>
                 <Check size={20} color="white" />
-                <Text className="text-white font-bold text-xs uppercase tracking-widest">Success</Text>
+                <Text style={styles.submitBtnText}>Success</Text>
               </>
             ) : (
               <>
                 <CheckCircle size={20} color="white" />
-                <Text className="text-white font-bold text-xs uppercase tracking-widest">Submit Attendance</Text>
+                <Text style={styles.submitBtnText}>Submit Attendance</Text>
               </>
             )}
           </TouchableOpacity>
@@ -322,3 +258,104 @@ export default function AttendanceView({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, height: 64, backgroundColor: colors.surfaceContainerLowest,
+    borderBottomWidth: 1, borderBottomColor: colors.outlineVariant,
+  },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatarContainer: {
+    width: 40, height: 40, borderRadius: 20, overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainer,
+  },
+  avatar: { width: '100%', height: '100%' },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.5, color: colors.primary },
+  headerBtn: {
+    width: 40, height: 40, alignItems: 'center', justifyContent: 'center',
+    borderRadius: 20, backgroundColor: colors.surfaceContainerLow,
+  },
+  scroll: { flex: 1, paddingHorizontal: 16 },
+  scrollContent: { paddingBottom: 120, paddingTop: 16 },
+  tabBar: { marginBottom: 16 },
+  tabInner: { flexDirection: 'row', padding: 4, backgroundColor: colors.surfaceContainer, borderRadius: 12, alignSelf: 'flex-start' },
+  tab: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  tabActive: { backgroundColor: colors.surfaceContainerLowest },
+  tabText: { fontSize: 12, fontWeight: '700', color: colors.onSurfaceVariant },
+  tabTextActive: { color: colors.primary },
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceContainerLowest,
+    borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: 12,
+    paddingHorizontal: 16, height: 48, marginBottom: 16,
+  },
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 14, fontWeight: '500', color: colors.onSurface },
+  listHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: 8 },
+  listHeaderText: { fontSize: 12, color: colors.outline, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  studentList: { gap: 12 },
+  studentCard: {
+    backgroundColor: colors.surfaceContainerLowest, borderWidth: 1,
+    borderColor: colors.outlineVariant, borderRadius: 16, padding: 16,
+  },
+  studentCardHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16,
+  },
+  studentInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  studentAvatar: {
+    width: 48, height: 48, borderRadius: 24, overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainer,
+  },
+  studentAvatarImg: { width: '100%', height: '100%' },
+  studentName: { fontWeight: '700', color: colors.onSurface, fontSize: 16, letterSpacing: -0.3 },
+  studentId: { fontSize: 12, color: colors.outline, marginTop: 2 },
+  roomBadge: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: colors.surfaceContainer, borderRadius: 8 },
+  roomBadgeText: { fontWeight: '700', fontSize: 12, color: colors.primary },
+  statusRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.outlineVariant,
+  },
+  statusBtn: {
+    flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    gap: 6, paddingVertical: 10, borderRadius: 9999, borderWidth: 1, borderColor: colors.outlineVariant,
+    backgroundColor: colors.surfaceContainerLowest,
+  },
+  statusPresentActive: { backgroundColor: '#f0fdf4', borderColor: '#16a34a' },
+  statusAbsentActive: { backgroundColor: '#fef2f2', borderColor: '#dc2626' },
+  statusLeaveActive: { backgroundColor: '#fefce8', borderColor: '#ca8a04' },
+  statusBtnText: { fontSize: 12, fontWeight: '700', color: colors.onSurfaceVariant },
+  statusPresentText: { color: '#166534' },
+  statusAbsentText: { color: '#991b1b' },
+  statusLeaveText: { color: '#854d0e' },
+  historyHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: 16,
+  },
+  historyHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  historyTitle: { fontSize: 18, fontWeight: '700', color: colors.onSurface },
+  historyBadge: { backgroundColor: colors.surfaceContainer, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  historyBadgeText: { fontSize: 12, fontWeight: '700', color: colors.outline, textTransform: 'uppercase' },
+  historyList: { gap: 12 },
+  historyCard: {
+    backgroundColor: colors.surfaceContainerLowest, borderWidth: 1,
+    borderColor: colors.outlineVariant, borderRadius: 16, padding: 16,
+  },
+  historyCardHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderBottomWidth: 1, borderBottomColor: colors.outlineVariant, paddingBottom: 8, marginBottom: 12,
+  },
+  historyDate: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  historyDateText: { fontSize: 12, fontWeight: '700', color: colors.onSurfaceVariant },
+  verifiedBadge: { backgroundColor: 'rgba(0,74,198,0.1)', paddingHorizontal: 10, paddingVertical: 2, borderRadius: 9999 },
+  verifiedBadgeText: { fontSize: 10, color: colors.primary, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+  historyStats: { flexDirection: 'row', gap: 8 },
+  historyStat: { flex: 1, padding: 8, borderRadius: 12, borderWidth: 1, alignItems: 'center' },
+  historyStatLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+  historyStatNumber: { fontSize: 18, fontWeight: '800', marginTop: 4 },
+  submitFloat: { position: 'absolute', bottom: 24, right: 16, zIndex: 40 },
+  submitBtn: {
+    paddingHorizontal: 24, paddingVertical: 16, borderRadius: 9999,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+  },
+  submitBtnText: { color: 'white', fontWeight: '700', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
+});

@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Student, Complaint, Visitor, AttendanceStatus, ComplaintStatus } from './types';
 import { INITIAL_STUDENTS, INITIAL_COMPLAINTS, INITIAL_VISITORS } from './data';
+import { colors } from './theme';
 import BottomNavBar from './components/BottomNavBar';
 import HomeView from './components/HomeView';
 import AttendanceView from './components/AttendanceView';
 import ComplaintsView from './components/ComplaintsView';
 import VisitorsView from './components/VisitorsView';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'attendance' | 'complaints' | 'visitors'>('home');
-  
+
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
   const [visitors, setVisitors] = useState<Visitor[]>(INITIAL_VISITORS);
-  
+
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -26,10 +26,8 @@ export default function App() {
       try {
         const savedStudents = await AsyncStorage.getItem('hf_students');
         if (savedStudents) setStudents(JSON.parse(savedStudents));
-        
         const savedComplaints = await AsyncStorage.getItem('hf_complaints');
         if (savedComplaints) setComplaints(JSON.parse(savedComplaints));
-        
         const savedVisitors = await AsyncStorage.getItem('hf_visitors');
         if (savedVisitors) setVisitors(JSON.parse(savedVisitors));
       } catch (e) {
@@ -57,7 +55,7 @@ export default function App() {
   }, [visitors, isReady]);
 
   const handleUpdateAttendance = (studentId: string, status: AttendanceStatus) => {
-    setStudents(prev => prev.map(student => 
+    setStudents(prev => prev.map(student =>
       student.id === studentId ? { ...student, attendanceStatus: status } : student
     ));
   };
@@ -71,7 +69,7 @@ export default function App() {
   };
 
   const handleUpdateComplaintStatus = (id: string, status: ComplaintStatus) => {
-    setComplaints(prev => prev.map(complaint => 
+    setComplaints(prev => prev.map(complaint =>
       complaint.id === id ? { ...complaint, status } : complaint
     ));
     setSelectedComplaint(prev => prev && prev.id === id ? { ...prev, status } : prev);
@@ -82,9 +80,9 @@ export default function App() {
   };
 
   const handleCheckOutVisitor = (id: string) => {
-    setVisitors(prev => prev.map(visitor => 
-      visitor.id === id 
-        ? { ...visitor, status: 'checked-out', checkOutTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) } 
+    setVisitors(prev => prev.map(visitor =>
+      visitor.id === id
+        ? { ...visitor, status: 'checked-out', checkOutTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
         : visitor
     ));
   };
@@ -105,57 +103,60 @@ export default function App() {
   if (!isReady) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <View className="flex-1 pb-20">
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.content}>
         {activeTab === 'home' && (
-          <Animated.View entering={FadeIn} exiting={FadeOut} className="flex-1">
-            <HomeView 
-              onTabChange={setActiveTab}
-              pendingComplaintsCount={pendingComplaintsCount}
-              activeVisitorsCount={activeVisitorsCount}
-              criticalComplaints={criticalComplaintsList}
-              onSelectComplaint={handleSelectComplaintFromHome}
-              onOpenNewVisitor={handleOpenVisitorRegistration}
-            />
-          </Animated.View>
+          <HomeView
+            onTabChange={setActiveTab}
+            pendingComplaintsCount={pendingComplaintsCount}
+            activeVisitorsCount={activeVisitorsCount}
+            criticalComplaints={criticalComplaintsList}
+            onSelectComplaint={handleSelectComplaintFromHome}
+            onOpenNewVisitor={handleOpenVisitorRegistration}
+          />
         )}
 
         {activeTab === 'attendance' && (
-          <Animated.View entering={FadeIn} exiting={FadeOut} className="flex-1">
-            <AttendanceView 
-              students={students}
-              onUpdateAttendance={handleUpdateAttendance}
-              onSubmitAllAttendance={handleSubmitAllAttendance}
-            />
-          </Animated.View>
+          <AttendanceView
+            students={students}
+            onUpdateAttendance={handleUpdateAttendance}
+            onSubmitAllAttendance={handleSubmitAllAttendance}
+          />
         )}
 
         {activeTab === 'complaints' && (
-          <Animated.View entering={FadeIn} exiting={FadeOut} className="flex-1">
-            <ComplaintsView 
-              complaints={complaints}
-              selectedComplaint={selectedComplaint}
-              onSelectComplaint={setSelectedComplaint}
-              onAddComplaint={handleAddComplaint}
-              onUpdateComplaintStatus={handleUpdateComplaintStatus}
-            />
-          </Animated.View>
+          <ComplaintsView
+            complaints={complaints}
+            selectedComplaint={selectedComplaint}
+            onSelectComplaint={setSelectedComplaint}
+            onAddComplaint={handleAddComplaint}
+            onUpdateComplaintStatus={handleUpdateComplaintStatus}
+          />
         )}
 
         {activeTab === 'visitors' && (
-          <Animated.View entering={FadeIn} exiting={FadeOut} className="flex-1">
-            <VisitorsView 
-              visitors={visitors}
-              onAddVisitor={handleAddVisitor}
-              onCheckOutVisitor={handleCheckOutVisitor}
-            />
-          </Animated.View>
+          <VisitorsView
+            visitors={visitors}
+            onAddVisitor={handleAddVisitor}
+            onCheckOutVisitor={handleCheckOutVisitor}
+          />
         )}
       </View>
-      <BottomNavBar 
+      <BottomNavBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
+    paddingBottom: 80,
+  },
+});
