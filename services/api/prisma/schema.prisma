@@ -165,8 +165,8 @@ model Attendance {
   id             String    @id @default(uuid()) @db.Uuid
   studentId      String    @map("student_id") @db.Uuid
   attendanceDate DateTime? @map("attendance_date") @db.Date
-  checkIn        String?   @map("check_in") @db.Time
-  checkOut       String?   @map("check_out") @db.Time
+  checkIn        String?   @map("check_in")
+  checkOut       String?   @map("check_out")
   status         String?   @db.VarChar(20)
   markedBy       String?   @map("marked_by") @db.Uuid
 
