@@ -1,8 +1,5 @@
 {
   "buildCommand": "npm install && npx prisma generate",
   "installCommand": "npm install",
-  "functions": {
-    "api/**/*.ts": { "runtime": "@vercel/node@3" }
-  },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
 }
