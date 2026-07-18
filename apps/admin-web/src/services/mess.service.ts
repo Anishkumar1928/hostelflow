@@ -34,7 +34,7 @@ class MessService extends BaseService<MessMenu> {
   private eventService: MessEventService;
 
   constructor() {
-    super('messMenu', INITIAL_MESS_MENU as MessMenu[]);
+    super('messMenu', INITIAL_MESS_MENU as MessMenu[], 'mess');
     this.eventService = new MessEventService();
   }
 

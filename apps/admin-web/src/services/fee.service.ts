@@ -5,7 +5,7 @@ import { generateId, generateReceiptNo } from '../utils';
 
 class FeeService extends BaseService<Fee> {
   constructor() {
-    super('fees', INITIAL_FEES as Fee[]);
+    super('fees', INITIAL_FEES as Fee[], 'payments');
   }
 
   async getByStudent(studentId: string) {

@@ -1,7 +1,12 @@
 import { mockApiCall } from '../api/client';
+import { api } from '../api/client';
 
 class DashboardService {
   async getAdminStats() {
+    try {
+      const res = await api.get<any>('/dashboard/admin');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     const [{ studentService }, { hostelService }, { roomService }, { bedService }, { feeService }, { complaintService }, { visitorService }, { attendanceService }, { leaveService }, { applicationService }] = await Promise.all([
       import('./student.service'), import('./hostel.service'), import('./room.service'), import('./bed.service'),
       import('./fee.service'), import('./complaint.service'), import('./visitor.service'), import('./attendance.service'),

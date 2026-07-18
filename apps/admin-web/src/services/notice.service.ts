@@ -4,7 +4,7 @@ import { INITIAL_NOTICES } from '../data';
 
 class NoticeService extends BaseService<Notice> {
   constructor() {
-    super('notices', INITIAL_NOTICES as Notice[]);
+    super('notices', INITIAL_NOTICES as Notice[], 'announcements');
   }
 }
 

@@ -41,7 +41,7 @@ class DocumentService extends BaseService<StudentDocument> {
   private eventService: DocumentEventService;
 
   constructor() {
-    super('studentDocuments', INITIAL_STUDENT_DOCUMENTS as StudentDocument[]);
+    super('studentDocuments', INITIAL_STUDENT_DOCUMENTS as StudentDocument[], 'documents');
     this.eventService = new DocumentEventService();
   }
 

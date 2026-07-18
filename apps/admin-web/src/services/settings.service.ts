@@ -10,9 +10,10 @@ import {
   INITIAL_SMTP_CONFIG, INITIAL_CLOUDINARY_CONFIG, INITIAL_RAZORPAY_CONFIG,
 } from '../data';
 import { generateId } from '../utils';
+import { api } from '../api/client';
 
 class AuditLogService extends BaseService<AuditLogEntry> {
-  constructor() { super('audit-logs', INITIAL_AUDIT_LOGS); }
+  constructor() { super('audit-logs', INITIAL_AUDIT_LOGS, 'audit-logs'); }
 
   async log(action: string, entityType: string, entityId: string, performedBy: string, field?: string, oldValue?: string, newValue?: string, details?: string) {
     const entry: AuditLogEntry = {
@@ -80,7 +81,6 @@ class BackupService extends BaseService<BackupRecord> {
   }
 }
 
-// Future API: GET /settings, PUT /settings
 class SettingsService {
   private instituteData: InstituteSettings[];
   private hostelData: HostelSettings[];
@@ -106,9 +106,17 @@ class SettingsService {
 
   // Institute
   async getInstitute() {
+    try {
+      const res = await api.get<any>('/settings/institute');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     return { success: true, data: this.instituteData[0] };
   }
   async updateInstitute(data: Partial<InstituteSettings>, performedBy: string) {
+    try {
+      const res = await api.put('/settings/institute', data);
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     const old = { ...this.instituteData[0] };
     this.instituteData[0] = { ...this.instituteData[0], ...data };
     Object.entries(data).forEach(([key, value]) => {
@@ -121,9 +129,17 @@ class SettingsService {
 
   // Hostel
   async getHostelSettings() {
+    try {
+      const res = await api.get<any>('/settings/hostel');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     return { success: true, data: this.hostelData[0] };
   }
   async updateHostelSettings(data: Partial<HostelSettings>, performedBy: string) {
+    try {
+      const res = await api.put('/settings/hostel', data);
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     const old = { ...this.hostelData[0] };
     this.hostelData[0] = { ...this.hostelData[0], ...data };
     Object.entries(data).forEach(([key, value]) => {
@@ -136,9 +152,17 @@ class SettingsService {
 
   // SMTP
   async getSMTPConfig() {
+    try {
+      const res = await api.get<any>('/settings/smtp');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     return { success: true, data: this.smtpData[0] };
   }
   async updateSMTPConfig(data: Partial<SMTPConfig>, performedBy: string) {
+    try {
+      const res = await api.put('/settings/smtp', data);
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     const old = { ...this.smtpData[0] };
     this.smtpData[0] = { ...this.smtpData[0], ...data };
     Object.entries(data).forEach(([key, value]) => {
@@ -151,6 +175,10 @@ class SettingsService {
 
   // Cloudinary
   async getCloudinaryConfig() {
+    try {
+      const res = await api.get<any>('/settings/cloudinary');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     return { success: true, data: this.cloudinaryData[0] };
   }
   async updateCloudinaryConfig(data: Partial<CloudinaryConfig>, performedBy: string) {
@@ -161,6 +189,10 @@ class SettingsService {
 
   // Razorpay
   async getRazorpayConfig() {
+    try {
+      const res = await api.get<any>('/settings/razorpay');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     return { success: true, data: this.razorpayData[0] };
   }
   async updateRazorpayConfig(data: Partial<RazorpayConfig>, performedBy: string) {
@@ -171,6 +203,10 @@ class SettingsService {
 
   // System Preferences
   async getPreferences() {
+    try {
+      const res = await api.get<any>('/settings/preferences');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     return { success: true, data: this.preferencesData[0] };
   }
   async updatePreferences(data: Partial<SystemPreferences>, performedBy: string) {
@@ -191,14 +227,21 @@ class SettingsService {
 
   // Roles
   async getRoles() {
+    try {
+      const res = await api.get<any[]>('/roles');
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     return { success: true, data: [...this.rolesData] };
   }
   async getRole(id: string) {
+    try {
+      const res = await api.get<any>(`/roles/${id}`);
+      if (res.success && res.data) return { success: true, data: res.data };
+    } catch {}
     const role = this.rolesData.find(r => r.id === id);
     if (!role) return { success: false, error: 'Role not found' };
     return { success: true, data: role };
   }
-  // Validate unique role names
   async createRole(data: { name: string; description: string; permissions: string[]; isDefault?: boolean }, performedBy: string) {
     if (this.rolesData.some(r => r.name.toLowerCase() === data.name.toLowerCase())) {
       return { success: false, error: 'Role name must be unique' };
@@ -212,12 +255,10 @@ class SettingsService {
     this.auditLog.log('Created', 'Role', role.id, performedBy, '', '', role.name, `Created new role: ${role.name}`);
     return { success: true, data: role };
   }
-  // Prevent deletion of default roles
   async updateRole(id: string, data: { name?: string; description?: string; permissions?: string[] }, performedBy: string) {
     const idx = this.rolesData.findIndex(r => r.id === id);
     if (idx === -1) return { success: false, error: 'Role not found' };
     const old = { ...this.rolesData[idx] };
-    // Check unique name
     if (data.name && data.name.toLowerCase() !== old.name.toLowerCase() &&
         this.rolesData.some(r => r.name.toLowerCase() === data.name.toLowerCase())) {
       return { success: false, error: 'Role name must be unique' };
@@ -230,7 +271,6 @@ class SettingsService {
     });
     return { success: true, data: this.rolesData[idx] };
   }
-  // Prevent deletion of default roles
   async deleteRole(id: string, performedBy: string) {
     const idx = this.rolesData.findIndex(r => r.id === id);
     if (idx === -1) return { success: false, error: 'Role not found' };

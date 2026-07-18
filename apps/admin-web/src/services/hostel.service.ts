@@ -20,7 +20,7 @@ interface HostelStats {
 
 class HostelService extends BaseService<Hostel> {
   constructor() {
-    super('hostels', INITIAL_HOSTELS as Hostel[]);
+    super('hostels', INITIAL_HOSTELS as Hostel[], 'hostels');
   }
 
   async getStatistics(): Promise<ApiResponse<HostelStats>> {

@@ -8,31 +8,38 @@ class StudentService extends BaseService<Student> {
     super('students', INITIAL_STUDENTS as Student[]);
   }
 
+  protected async getAllLocally() {
+    return this.getAllFromStorage().filter((s: any) => !s.isDeleted);
+  }
+
   async getByHostel(hostelId: string) {
-    const all = this.getAllFromStorage().filter(s => !s.isDeleted);
-    return { success: true, data: all.filter(s => s.hostelId === hostelId) };
+    const data = await this.getAllLocally();
+    return { success: true, data: data.filter(s => s.hostelId === hostelId) };
   }
 
   async getUnallocated() {
-    const all = this.getAllFromStorage().filter(s => !s.isDeleted);
-    return { success: true, data: all.filter(s => !s.hostelId || !s.roomId) };
+    const data = await this.getAllLocally();
+    return { success: true, data: data.filter(s => !s.hostelId || !s.roomId) };
   }
 
   async getByUserId(userId: string) {
-    const student = this.getAllFromStorage().find(s => s.userId === userId && !s.isDeleted);
+    const data = await this.getAllLocally();
+    const student = data.find(s => s.userId === userId);
     return { success: true, data: student };
   }
 
   async checkEnrollmentUnique(enrollmentNo: string, excludeId?: string) {
-    const exists = this.getAllFromStorage().some(
-      s => s.enrollmentNo === enrollmentNo && s.id !== excludeId && !s.isDeleted,
+    const data = await this.getAllLocally();
+    const exists = data.some(
+      s => s.enrollmentNo === enrollmentNo && s.id !== excludeId,
     );
     return { success: true, data: exists };
   }
 
   async checkEmailUnique(email: string, excludeId?: string) {
-    const exists = this.getAllFromStorage().some(
-      s => s.email === email && s.id !== excludeId && !s.isDeleted,
+    const data = await this.getAllLocally();
+    const exists = data.some(
+      s => s.email === email && s.id !== excludeId,
     );
     return { success: true, data: exists };
   }

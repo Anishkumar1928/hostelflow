@@ -1,25 +1,41 @@
 import { Notification } from '../types';
 import { INITIAL_NOTIFICATIONS } from '../data';
-import { mockApiCall } from '../api/client';
+import { api } from '../api/client';
 
 class NotificationService {
   private notifications: Notification[] = INITIAL_NOTIFICATIONS as Notification[];
 
   async getAll(userId: string): Promise<{ success: boolean; data?: Notification[] }> {
-    return mockApiCall(this.notifications.filter(n => n.userId === userId));
+    try {
+      const res = await api.get<Notification[]>(`/notifications?userId=${userId}`);
+      if (res.success && res.data) {
+        const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data ?? [];
+        return { success: true, data };
+      }
+    } catch {}
+    return { success: true, data: this.notifications.filter(n => n.userId === userId) };
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    return this.notifications.filter(n => n.userId === userId && !n.read).length;
+    const res = await this.getAll(userId);
+    return (res.data || []).filter(n => !n.read).length;
   }
 
   async markRead(id: string): Promise<{ success: boolean }> {
+    try {
+      const res = await api.patch(`/notifications/${id}`, { isRead: true });
+      if (res.success) return { success: true };
+    } catch {}
     const idx = this.notifications.findIndex(n => n.id === id);
     if (idx !== -1) this.notifications[idx].read = true;
     return { success: true };
   }
 
   async markAllRead(userId: string): Promise<{ success: boolean }> {
+    try {
+      const res = await api.post('/notifications/read-all', { userId });
+      if (res.success) return { success: true };
+    } catch {}
     this.notifications.forEach(n => {
       if (n.userId === userId) n.read = true;
     });

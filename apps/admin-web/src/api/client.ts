@@ -42,7 +42,7 @@ async function request<T>(
           page: json.pagination.page,
           limit: json.pagination.limit,
           totalPages: json.pagination.totalPages,
-        } as PaginatedResponse<T>,
+        } as unknown as T,
       };
     }
 

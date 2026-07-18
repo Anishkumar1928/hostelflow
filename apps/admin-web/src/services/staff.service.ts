@@ -4,7 +4,7 @@ import { INITIAL_STAFF } from '../data';
 
 class StaffService extends BaseService<Staff> {
   constructor() {
-    super('staff', INITIAL_STAFF as Staff[]);
+    super('staff', INITIAL_STAFF as Staff[], 'users');
   }
 }
 
