@@ -35,6 +35,12 @@ import auditRoutes from './modules/audit-logs/audit.routes';
 
 const app = express();
 
+app.set('trust proxy', 1);
+app.set('etag', false);
+
+app.get('/favicon.ico', (_req, res) => res.status(204).end());
+app.get('/favicon.png', (_req, res) => res.status(204).end());
+
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: config.cors.origins, credentials: true }));
 app.use(morgan('combined'));
