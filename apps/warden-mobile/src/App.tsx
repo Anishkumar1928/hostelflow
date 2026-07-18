@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Student, Complaint, Visitor, AttendanceStatus, ComplaintStatus } from './types';
-import { INITIAL_STUDENTS, INITIAL_COMPLAINTS, INITIAL_VISITORS } from './data';
 import { colors } from './theme';
+import { INITIAL_STUDENTS, INITIAL_COMPLAINTS, INITIAL_VISITORS } from './data';
 import BottomNavBar from './components/BottomNavBar';
 import HomeView from './components/HomeView';
 import AttendanceView from './components/AttendanceView';
@@ -12,13 +11,11 @@ import ComplaintsView from './components/ComplaintsView';
 import VisitorsView from './components/VisitorsView';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'attendance' | 'complaints' | 'visitors'>('home');
-
-  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
-  const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
-  const [visitors, setVisitors] = useState<Visitor[]>(INITIAL_VISITORS);
-
-  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [activeTab, setActiveTab] = useState('home');
+  const [students, setStudents] = useState(INITIAL_STUDENTS);
+  const [complaints, setComplaints] = useState(INITIAL_COMPLAINTS);
+  const [visitors, setVisitors] = useState(INITIAL_VISITORS);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -31,7 +28,7 @@ export default function App() {
         const savedVisitors = await AsyncStorage.getItem('hf_visitors');
         if (savedVisitors) setVisitors(JSON.parse(savedVisitors));
       } catch (e) {
-        console.error("Failed to load state", e);
+        console.error(e);
       } finally {
         setIsReady(true);
       }
@@ -41,64 +38,60 @@ export default function App() {
 
   useEffect(() => {
     if (!isReady) return;
-    AsyncStorage.setItem('hf_students', JSON.stringify(students)).catch(console.error);
+    AsyncStorage.setItem('hf_students', JSON.stringify(students)).catch(() => {});
   }, [students, isReady]);
 
   useEffect(() => {
     if (!isReady) return;
-    AsyncStorage.setItem('hf_complaints', JSON.stringify(complaints)).catch(console.error);
+    AsyncStorage.setItem('hf_complaints', JSON.stringify(complaints)).catch(() => {});
   }, [complaints, isReady]);
 
   useEffect(() => {
     if (!isReady) return;
-    AsyncStorage.setItem('hf_visitors', JSON.stringify(visitors)).catch(console.error);
+    AsyncStorage.setItem('hf_visitors', JSON.stringify(visitors)).catch(() => {});
   }, [visitors, isReady]);
 
-  const handleUpdateAttendance = (studentId: string, status: AttendanceStatus) => {
-    setStudents(prev => prev.map(student =>
-      student.id === studentId ? { ...student, attendanceStatus: status } : student
-    ));
+  const handleUpdateAttendance = (studentId, status) => {
+    setStudents((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, attendanceStatus: status } : s))
+    );
   };
 
-  const handleSubmitAllAttendance = (stats: { present: number; absent: number; leave: number }) => {
-    console.log("Attendance submitted successfully!", stats);
+  const handleSubmitAllAttendance = () => {};
+
+  const handleAddComplaint = (newComplaint) => {
+    setComplaints((prev) => [newComplaint, ...prev]);
   };
 
-  const handleAddComplaint = (newComplaint: Complaint) => {
-    setComplaints(prev => [newComplaint, ...prev]);
+  const handleUpdateComplaintStatus = (id, status) => {
+    setComplaints((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, status } : c))
+    );
+    setSelectedComplaint((prev) =>
+      prev && prev.id === id ? { ...prev, status } : prev
+    );
   };
 
-  const handleUpdateComplaintStatus = (id: string, status: ComplaintStatus) => {
-    setComplaints(prev => prev.map(complaint =>
-      complaint.id === id ? { ...complaint, status } : complaint
-    ));
-    setSelectedComplaint(prev => prev && prev.id === id ? { ...prev, status } : prev);
+  const handleAddVisitor = (newVisitor) => {
+    setVisitors((prev) => [newVisitor, ...prev]);
   };
 
-  const handleAddVisitor = (newVisitor: Visitor) => {
-    setVisitors(prev => [newVisitor, ...prev]);
+  const handleCheckOutVisitor = (id) => {
+    setVisitors((prev) =>
+      prev.map((v) =>
+        v.id === id
+          ? {
+              ...v,
+              status: 'checked-out',
+              checkOutTime: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+            }
+          : v
+      )
+    );
   };
-
-  const handleCheckOutVisitor = (id: string) => {
-    setVisitors(prev => prev.map(visitor =>
-      visitor.id === id
-        ? { ...visitor, status: 'checked-out', checkOutTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-        : visitor
-    ));
-  };
-
-  const handleSelectComplaintFromHome = (complaint: Complaint) => {
-    setSelectedComplaint(complaint);
-    setActiveTab('complaints');
-  };
-
-  const handleOpenVisitorRegistration = () => {
-    setActiveTab('visitors');
-  };
-
-  const criticalComplaintsList = complaints.filter(c => c.priority === 'critical' && c.status !== 'resolved');
-  const pendingComplaintsCount = complaints.filter(c => c.status !== 'resolved').length;
-  const activeVisitorsCount = visitors.filter(v => v.status === 'in-premise').length;
 
   if (!isReady) return null;
 
@@ -108,14 +101,13 @@ export default function App() {
         {activeTab === 'home' && (
           <HomeView
             onTabChange={setActiveTab}
-            pendingComplaintsCount={pendingComplaintsCount}
-            activeVisitorsCount={activeVisitorsCount}
-            criticalComplaints={criticalComplaintsList}
-            onSelectComplaint={handleSelectComplaintFromHome}
-            onOpenNewVisitor={handleOpenVisitorRegistration}
+            pendingComplaintsCount={complaints.filter((c) => c.status !== 'resolved').length}
+            activeVisitorsCount={visitors.filter((v) => v.status === 'in-premise').length}
+            criticalComplaints={complaints.filter((c) => c.priority === 'critical' && c.status !== 'resolved')}
+            onSelectComplaint={(c) => { setSelectedComplaint(c); setActiveTab('complaints'); }}
+            onOpenNewVisitor={() => setActiveTab('visitors')}
           />
         )}
-
         {activeTab === 'attendance' && (
           <AttendanceView
             students={students}
@@ -123,7 +115,6 @@ export default function App() {
             onSubmitAllAttendance={handleSubmitAllAttendance}
           />
         )}
-
         {activeTab === 'complaints' && (
           <ComplaintsView
             complaints={complaints}
@@ -133,7 +124,6 @@ export default function App() {
             onUpdateComplaintStatus={handleUpdateComplaintStatus}
           />
         )}
-
         {activeTab === 'visitors' && (
           <VisitorsView
             visitors={visitors}
@@ -142,21 +132,12 @@ export default function App() {
           />
         )}
       </View>
-      <BottomNavBar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    paddingBottom: 80,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { flex: 1, paddingBottom: 80 },
 });

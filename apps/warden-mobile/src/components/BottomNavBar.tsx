@@ -1,30 +1,23 @@
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Home, ClipboardCheck, AlertTriangle, Users } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from '../icons';
 import { colors } from '../theme';
 
-interface BottomNavBarProps {
-  activeTab: 'home' | 'attendance' | 'complaints' | 'visitors';
-  onTabChange: (tab: 'home' | 'attendance' | 'complaints' | 'visitors') => void;
-}
-
-export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarProps) {
+export default function BottomNavBar({ activeTab, onTabChange }) {
   const insets = useSafeAreaInsets();
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'attendance', label: 'Attendance', icon: ClipboardCheck },
-    { id: 'complaints', label: 'Complaints', icon: AlertTriangle },
-    { id: 'visitors', label: 'Visitors', icon: Users },
-  ] as const;
+    { id: 'home', label: 'Home', icon: 'home' },
+    { id: 'attendance', label: 'Attendance', icon: 'clipboard-check' },
+    { id: 'complaints', label: 'Complaints', icon: 'alert' },
+    { id: 'visitors', label: 'Visitors', icon: 'account-group' },
+  ];
 
   return (
     <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 16) }]}>
       <View style={styles.inner}>
         {navItems.map((item) => {
-          const Icon = item.icon;
           const isActive = activeTab === item.id;
-
           return (
             <TouchableOpacity
               key={item.id}
@@ -32,9 +25,9 @@ export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarPro
               style={[styles.tab, isActive && styles.activeTab]}
             >
               <Icon
-                color={isActive ? colors.onSecondaryContainer : colors.onSurfaceVariant}
-                strokeWidth={isActive ? 2.5 : 2}
+                name={item.icon}
                 size={20}
+                color={isActive ? colors.onSecondaryContainer : colors.onSurfaceVariant}
               />
               <Text style={[styles.label, isActive && styles.activeLabel]}>
                 {item.label}
@@ -61,7 +54,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceContainerLowest,
     borderTopWidth: 1,
     borderTopColor: colors.outlineVariant,
-    zIndex: 50,
   },
   inner: {
     flexDirection: 'row',

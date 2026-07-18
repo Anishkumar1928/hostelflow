@@ -1,5 +1,5 @@
-import MainApp from "./src/App";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import MainApp from './src/App';
 
 export default function App() {
   return (
