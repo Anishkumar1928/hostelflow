@@ -61,3 +61,4 @@ docker/pgdata/
 .env
 .env.local
 .env.*.local
+apps/admin-web/.env.development

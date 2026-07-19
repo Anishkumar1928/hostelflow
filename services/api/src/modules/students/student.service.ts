@@ -60,7 +60,7 @@ export const list = async (params: any) => {
   const page = Math.max(1, parseInt(params.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(params.limit) || 10));
   const skip = (page - 1) * limit;
-  const search = params.search || '';
+  const search = (params.search || '').trim();
   const sortBy = params.sortBy || 'createdAt';
   const sortOrder = params.sortOrder === 'asc' ? 'asc' : 'desc';
 
@@ -78,9 +78,10 @@ export const list = async (params: any) => {
   if (params.gender) where.gender = params.gender;
   if (params.department) where.department = params.department;
   if (params.status && params.status !== 'all') where.status = params.status;
+  if (params.feeStatus) where.feeStatus = params.feeStatus;
 
   const orderBy: any = {};
-  const sortMap: Record<string, string> = { name: 'user_fullName', createdAt: 'createdAt', enrollmentNo: 'enrollmentNo' };
+  const sortMap: Record<string, string> = { name: 'user_fullName', createdAt: 'createdAt', enrollmentNo: 'enrollmentNo', department: 'department', course: 'course', year: 'year' };
   if (sortMap[sortBy] === 'user_fullName') {
     orderBy.user = { fullName: sortOrder };
   } else {

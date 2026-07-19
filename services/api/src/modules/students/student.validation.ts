@@ -56,6 +56,7 @@ export const querySchema = z.object({
   gender: z.string().optional(),
   department: z.string().optional(),
   status: z.string().optional(),
+  feeStatus: z.string().optional(),
   sortBy: z.string().optional(),
   sortOrder: z.string().optional(),
 });
