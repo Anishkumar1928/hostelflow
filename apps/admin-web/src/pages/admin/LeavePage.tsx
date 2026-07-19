@@ -30,6 +30,7 @@ export function LeavePage() {
   const { addToast } = useNotify();
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -44,6 +45,7 @@ export function LeavePage() {
 
   const fetchLeaves = useCallback(async () => {
     setLoading(true);
+    setError('');
     const filters: Record<string, string> = {};
     if (statusFilter !== 'all') filters.status = statusFilter;
     if (typeFilter !== 'all') filters.leaveType = typeFilter;
@@ -52,6 +54,8 @@ export function LeavePage() {
       setLeaves(res.data.data.filter((l: LeaveRequest) => !l.isDeleted));
       setTotalPages(res.data.totalPages);
       setTotal(res.data.total);
+    } else {
+      setError((res as any).error || 'Failed to load leaves');
     }
     setLoading(false);
   }, [page, search, statusFilter, typeFilter, sortBy, sortOrder]);
@@ -132,11 +136,17 @@ export function LeavePage() {
         </div>
       </div>
 
+      {error && (
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-pink-500/10 border border-rose-200 dark:border-rose-800">
+          <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+        </div>
+      )}
+
       {loading ? (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <LoadingSkeleton rows={8} />
         </div>
-      ) : leaves.length === 0 ? (
+      ) : leaves.length === 0 && !error ? (
         <EmptyState
           icon={<CalendarCheck className="w-8 h-8" />}
           title="No leave requests found"

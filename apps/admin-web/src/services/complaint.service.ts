@@ -33,11 +33,13 @@ function extractList(res: any): Complaint[] {
 class ComplaintService {
   async getAll(): Promise<ApiResponse<Complaint[]>> {
     const res = await api.get<any>('/complaints?limit=1000');
+    if (!res.success) return { success: false, error: res.error || 'Failed to fetch complaints' };
     return { success: true, data: extractList(res) };
   }
 
   async getByStudent(studentId: string): Promise<ApiResponse<Complaint[]>> {
     const res = await api.get<any>(`/complaints?studentId=${studentId}&limit=50`);
+    if (!res.success) return { success: false, error: res.error || 'Failed to fetch complaints' };
     return { success: true, data: extractList(res) };
   }
 
@@ -59,6 +61,7 @@ class ComplaintService {
       Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
     }
     const res = await api.get<any>(`/complaints?${params}`);
+    if (!res.success) return { success: false, error: res.error || 'Failed to fetch complaints' };
     const data = extractList(res);
     const total = res.data?.total ?? data.length;
     return { success: true, data: { data, totalPages: Math.ceil(total / limit), total } };

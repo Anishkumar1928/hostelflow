@@ -28,11 +28,13 @@ function extractList(res: any): LeaveRequest[] {
 class LeaveService {
   async getAll(): Promise<ApiResponse<LeaveRequest[]>> {
     const res = await api.get<any>('/leaves?limit=1000');
+    if (!res.success) return { success: false, error: res.error || 'Failed to fetch leaves' };
     return { success: true, data: extractList(res) };
   }
 
   async getByStudent(studentId: string): Promise<ApiResponse<LeaveRequest[]>> {
     const res = await api.get<any>(`/leaves?studentId=${studentId}&limit=50`);
+    if (!res.success) return { success: false, error: res.error || 'Failed to fetch leaves' };
     return { success: true, data: extractList(res) };
   }
 
@@ -54,6 +56,7 @@ class LeaveService {
       Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
     }
     const res = await api.get<any>(`/leaves?${params}`);
+    if (!res.success) return { success: false, error: res.error || 'Failed to fetch leaves' };
     const data = extractList(res);
     const total = res.data?.total ?? data.length;
     return { success: true, data: { data, totalPages: Math.ceil(total / limit), total } };

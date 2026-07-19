@@ -2,6 +2,7 @@ import { API_BASE_URL, MOCK_DELAY } from '../constants';
 import type { ApiResponse, PaginatedResponse } from '../types';
 
 let authToken: string | null = null;
+let onUnauthorized: (() => void) | null = null;
 
 export function setAuthToken(token: string | null) {
   authToken = token;
@@ -9,6 +10,10 @@ export function setAuthToken(token: string | null) {
 
 export function getAuthToken() {
   return authToken;
+}
+
+export function setOnUnauthorized(cb: () => void) {
+  onUnauthorized = cb;
 }
 
 async function request<T>(
@@ -27,6 +32,12 @@ async function request<T>(
 
   try {
     const res = await fetch(url, { ...options, headers });
+
+    if (res.status === 401 && onUnauthorized) {
+      onUnauthorized();
+      return { success: false, error: 'Session expired. Please login again.' };
+    }
+
     const json = await res.json();
 
     if (!res.ok || !json.success) {

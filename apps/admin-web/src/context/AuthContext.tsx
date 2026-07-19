@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { User, UserRole } from '../types';
 import { authService } from '../services/auth.service';
-import { setAuthToken } from '../api/client';
+import { setAuthToken, setOnUnauthorized } from '../api/client';
 import { STORAGE_KEYS } from '../constants';
 
 interface AuthContextType {
@@ -42,6 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(JSON.parse(savedUser));
       }
     }
+
+    setOnUnauthorized(() => {
+      logout();
+    });
+
     setLoading(false);
   }, []);
 
