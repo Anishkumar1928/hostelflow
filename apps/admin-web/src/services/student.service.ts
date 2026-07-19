@@ -34,7 +34,7 @@ function toStudent(d: any): Student {
     emergencyContactRelation: d.emergencyContactRelation || '',
     hostelId: d.hostelId || '',
     roomId: d.roomId || '',
-    roomNo: d.roomNo || '',
+    roomNo: d.roomNo || d.room?.roomNo || '',
     status: d.status || (d.user?.status === false ? 'Inactive' : 'Active'),
     feeStatus: d.feeStatus || 'PENDING',
     admissionDate: d.admissionDate ? new Date(d.admissionDate).toISOString().split('T')[0] : (d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : ''),

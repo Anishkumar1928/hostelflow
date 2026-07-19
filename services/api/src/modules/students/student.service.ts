@@ -31,6 +31,10 @@ const studentSelect = {
   admissionDate: true,
   createdAt: true,
   updatedAt: true,
+  hostelId: true,
+  roomId: true,
+  hostel: { select: { id: true, name: true } },
+  room: { select: { id: true, roomNo: true } },
   user: {
     select: { id: true, fullName: true, email: true, phone: true, status: true, createdAt: true },
   },
