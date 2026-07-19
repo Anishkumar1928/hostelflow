@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 const SALT_ROUNDS = 10;
 
 function generatePassword(length = 8): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
   return Array.from({ length }, () => chars[crypto.randomInt(chars.length)]).join('');
 }
 
