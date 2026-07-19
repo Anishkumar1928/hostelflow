@@ -185,6 +185,7 @@ export function StudentsPage() {
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-500/10 to-slate-400/10">
                     <th className="text-left py-3.5 px-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Student</th>
+                    <th className="text-left py-3.5 px-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Registration</th>
                     <th className="text-left py-3.5 px-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Enrollment</th>
                     <th className="text-left py-3.5 px-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Course</th>
                     <th className="text-left py-3.5 px-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Status</th>
@@ -208,6 +209,7 @@ export function StudentsPage() {
                           </div>
                         </button>
                       </td>
+                      <td className="py-3.5 px-5 text-xs text-slate-600 dark:text-slate-300">{s.registrationNo || '-'}</td>
                       <td className="py-3.5 px-5 text-xs text-slate-600 dark:text-slate-300">{s.enrollmentNo}</td>
                       <td className="py-3.5 px-5 text-xs text-slate-600 dark:text-slate-300">{s.course} · {s.year}</td>
                       <td className="py-3.5 px-5">

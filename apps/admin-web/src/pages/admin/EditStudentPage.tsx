@@ -19,6 +19,7 @@ export function EditStudentPage() {
   const [dob, setDob] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [address, setAddress] = useState('');
+  const [registrationNo, setRegistrationNo] = useState('');
   const [enrollmentNo, setEnrollmentNo] = useState('');
   const [department, setDepartment] = useState('');
   const [course, setCourse] = useState('');
@@ -45,6 +46,7 @@ export function EditStudentPage() {
         setDob(s.dob || '');
         setBloodGroup(s.bloodGroup || '');
         setAddress(s.address || '');
+        setRegistrationNo(s.registrationNo || '');
         setEnrollmentNo(s.enrollmentNo);
         setDepartment(s.department);
         setCourse(s.course);
@@ -77,7 +79,7 @@ export function EditStudentPage() {
     const res = await studentService.updateStudent(id, {
       name, email, phone, gender: gender as 'Male' | 'Female' | 'Other',
       dob, bloodGroup: bloodGroup || undefined, address,
-      enrollmentNo, department, course, year, semester,
+      registrationNo: registrationNo || undefined, enrollmentNo, department, course, year, semester,
       parentName, parentContact,
       emergencyContactName, emergencyContactPhone, emergencyContactRelation: emergencyContactRelation || undefined,
       status: status as 'Active' | 'Inactive' | 'Suspended' | 'Graduated',
@@ -150,12 +152,16 @@ export function EditStudentPage() {
           <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Academic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="space-y-1.5">
-                <label className={labelClass}>Enrollment No *</label>
-                <input type="text" value={enrollmentNo} onChange={e => setEnrollmentNo(e.target.value)} className={inputClass} />
-              </div>
-              <div className="space-y-1.5">
-                <label className={labelClass}>Department *</label>
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Registration No</label>
+                  <input type="text" value={registrationNo} onChange={e => setRegistrationNo(e.target.value)} className={inputClass} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Enrollment No *</label>
+                  <input type="text" value={enrollmentNo} onChange={e => setEnrollmentNo(e.target.value)} className={inputClass} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Department *</label>
                 <input type="text" value={department} onChange={e => setDepartment(e.target.value)} className={inputClass} />
               </div>
               <div className="space-y-1.5">
