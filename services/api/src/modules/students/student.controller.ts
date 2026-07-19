@@ -27,6 +27,11 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
   await service.remove(req.params.id);
   sendSuccess(res, null, 'Deleted successfully', 204);
 });
+export const getStatistics = asyncHandler(async (req: Request, res: Response) => {
+  const result = await service.getStatistics();
+  sendSuccess(res, result);
+});
+
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
   const result = await service.resetPassword(req.params.id);
   sendSuccess(res, result, 'Password reset successfully');

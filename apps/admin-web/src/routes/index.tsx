@@ -26,6 +26,7 @@ import { CreateRoomPage } from '../pages/admin/CreateRoomPage';
 import { RoomDetailsPage } from '../pages/admin/RoomDetailsPage';
 import { EditRoomPage } from '../pages/admin/EditRoomPage';
 import { StudentsPage } from '../pages/admin/StudentsPage';
+import { StudentStatisticsPage } from '../pages/admin/StudentStatisticsPage';
 import { CreateStudentPage } from '../pages/admin/CreateStudentPage';
 import { EditStudentPage } from '../pages/admin/EditStudentPage';
 import { StudentDetailsPage } from '../pages/admin/StudentDetailsPage';
@@ -141,7 +142,7 @@ export const router = createBrowserRouter([
             { path: 'admin/rooms/:id/edit', element: <EditRoomPage /> },
             { path: 'admin/students', element: <StudentsPage /> },
             { path: 'admin/students/create', element: <CreateStudentPage /> },
-            { path: 'admin/students/statistics', element: <StudentsPage /> },
+            { path: 'admin/students/statistics', element: <StudentStatisticsPage /> },
             { path: 'admin/students/:id', element: <StudentDetailsPage /> },
             { path: 'admin/students/:id/edit', element: <EditStudentPage /> },
             { path: 'admin/applications', element: <ApplicationsPage /> },

@@ -206,6 +206,47 @@ export const remove = async (id: string) => {
   return { id };
 };
 
+export const getStatistics = async () => {
+  const [
+    totalStudents,
+    statusCounts,
+    genderCounts,
+    feeStatusCounts,
+  ] = await Promise.all([
+    prisma.student.count(),
+    prisma.student.groupBy({ by: ['status'], _count: { status: true } }),
+    prisma.student.groupBy({ by: ['gender'], _count: { gender: true } }),
+    prisma.student.groupBy({ by: ['feeStatus'], _count: { feeStatus: true } }),
+  ]);
+
+  const active = statusCounts.find(s => s.status === 'Active');
+  const inactive = statusCounts.find(s => s.status === 'Inactive');
+  const suspended = statusCounts.find(s => s.status === 'Suspended');
+  const graduated = statusCounts.find(s => s.status === 'Graduated');
+
+  const male = genderCounts.find(g => g.gender === 'Male');
+  const female = genderCounts.find(g => g.gender === 'Female');
+  const other = genderCounts.find(g => g.gender === 'Other');
+
+  const paid = feeStatusCounts.find(f => f.feeStatus === 'PAID');
+  const pending = feeStatusCounts.find(f => f.feeStatus === 'PENDING');
+  const overdue = feeStatusCounts.find(f => f.feeStatus === 'OVERDUE');
+
+  return {
+    totalStudents,
+    activeStudents: active?._count.status ?? 0,
+    inactiveStudents: inactive?._count.status ?? 0,
+    suspendedStudents: suspended?._count.status ?? 0,
+    graduatedStudents: graduated?._count.status ?? 0,
+    maleStudents: male?._count.gender ?? 0,
+    femaleStudents: female?._count.gender ?? 0,
+    otherStudents: other?._count.gender ?? 0,
+    paidFee: paid?._count.feeStatus ?? 0,
+    pendingFee: pending?._count.feeStatus ?? 0,
+    overdueFee: overdue?._count.feeStatus ?? 0,
+  };
+};
+
 export const resetPassword = async (id: string) => {
   const student = await prisma.student.findUnique({ where: { id }, select: { id: true, userId: true, user: { select: { email: true, fullName: true } } } });
   if (!student) throw new Error('Student not found');

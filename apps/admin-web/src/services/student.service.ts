@@ -1,6 +1,20 @@
 import { api } from '../api/client';
 import type { ApiResponse, PaginatedResponse, Student } from '../types';
 
+export interface StudentStatistics {
+  totalStudents: number;
+  activeStudents: number;
+  inactiveStudents: number;
+  suspendedStudents: number;
+  graduatedStudents: number;
+  maleStudents: number;
+  femaleStudents: number;
+  otherStudents: number;
+  paidFee: number;
+  pendingFee: number;
+  overdueFee: number;
+}
+
 function extractYear(y: string | number | undefined | null): number | null {
   if (!y) return null;
   if (typeof y === 'number') return y;
@@ -174,6 +188,12 @@ class StudentService {
   async resetPassword(id: string): Promise<ApiResponse<{ loginId: string; name: string; generatedPassword: string }>> {
     const res = await api.patch<any>(`/students/${id}/reset-password`);
     if (!res.success) return { success: false, error: res.error || 'Failed to reset password' };
+    return { success: true, data: res.data };
+  }
+
+  async getStatistics(): Promise<ApiResponse<StudentStatistics>> {
+    const res = await api.get<any>('/students/statistics');
+    if (!res.success) return { success: false, error: res.error || 'Failed to fetch statistics' };
     return { success: true, data: res.data };
   }
 
