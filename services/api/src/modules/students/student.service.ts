@@ -43,7 +43,7 @@ const studentSelect = {
       roomId: true,
       bedId: true,
       status: true,
-      room: { select: { id: true, roomNumber: true, hostelId: true, hostel: { select: { id: true, name: true } } } },
+      room: { select: { id: true, roomNumber: true, hostelId: true, hostel: { select: { id: true, hostelName: true } } } },
       bed: { select: { id: true, bedNumber: true } },
     },
   },

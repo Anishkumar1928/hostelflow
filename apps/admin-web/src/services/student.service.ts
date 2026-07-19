@@ -33,7 +33,7 @@ function toStudent(d: any): Student {
     emergencyContactPhone: d.emergencyContactPhone || '',
     emergencyContactRelation: d.emergencyContactRelation || '',
     hostelId: d.hostelId || d.allocations?.[0]?.room?.hostelId || '',
-    hostelName: d.hostelName || d.allocations?.[0]?.room?.hostel?.name || '',
+    hostelName: d.hostelName || d.allocations?.[0]?.room?.hostel?.hostelName || '',
     roomId: d.roomId || d.allocations?.[0]?.roomId || '',
     roomNo: d.roomNo || d.allocations?.[0]?.room?.roomNumber || d.allocations?.[0]?.room?.roomNo || '',
     status: d.status || (d.user?.status === false ? 'Inactive' : 'Active'),
