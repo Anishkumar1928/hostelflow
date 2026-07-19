@@ -45,21 +45,27 @@ export function StudentLeavePage() {
   }
 
   const handleApply = async () => {
-    if (!profile || !form.fromDate || !form.toDate || !form.reason) return;
+    if (!profile) { addToast('Profile not loaded. Please refresh.', 'error'); return; }
+    if (!form.fromDate || !form.toDate || !form.reason) { addToast('Please fill all fields', 'error'); return; }
     setSubmitting(true);
-    const res = await leaveService.applyLeave({
-      studentId: profile.id, studentName: profile.name,
-      leaveType: form.leaveType, fromDate: form.fromDate, toDate: form.toDate, reason: form.reason,
-    });
-    setSubmitting(false);
-    if (res.success) {
-      addToast('Leave applied successfully', 'success');
-      setShowApply(false);
-      setForm({ leaveType: 'Personal', fromDate: '', toDate: '', reason: '' });
-      const lRes = await leaveService.getByStudent(profile.id);
-      if (lRes.success && lRes.data) setLeaves(lRes.data);
-    } else {
-      addToast(res.error || 'Failed to apply leave', 'error');
+    try {
+      const res = await leaveService.applyLeave({
+        studentId: profile.id, studentName: profile.name,
+        leaveType: form.leaveType, fromDate: form.fromDate, toDate: form.toDate, reason: form.reason,
+      });
+      if (res.success) {
+        addToast('Leave applied successfully', 'success');
+        setShowApply(false);
+        setForm({ leaveType: 'Personal', fromDate: '', toDate: '', reason: '' });
+        const lRes = await leaveService.getByStudent(profile.id);
+        if (lRes.success && lRes.data) setLeaves(lRes.data);
+      } else {
+        addToast(res.error || 'Failed to apply leave', 'error');
+      }
+    } catch (e: any) {
+      addToast(e.message || 'Something went wrong', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 

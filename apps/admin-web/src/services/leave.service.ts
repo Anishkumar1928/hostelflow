@@ -70,7 +70,7 @@ class LeaveService {
       const d = res.data?.data ?? res.data;
       return { success: true, data: toLeave(d) };
     }
-    return { success: false, error: 'Failed to apply leave' };
+    return { success: false, error: res.error || res.message || 'Failed to apply leave' };
   }
 
   async approveLeave(id: string, approvedBy: string, remarks?: string): Promise<ApiResponse<LeaveRequest>> {
