@@ -154,7 +154,6 @@ export function CreateAllocationPage() {
 
   const filteredBuildings = buildings.filter(b => !selectedHostelId || b.hostelId === selectedHostelId);
   const filteredRooms = rooms.filter(r => !selectedBuildingId || r.buildingId === selectedBuildingId);
-  const filteredBeds = beds.filter(b => b.roomId === selectedRoomId);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -247,8 +246,9 @@ export function CreateAllocationPage() {
               <label className={labelClass}>Bed *</label>
               <select {...register('bedId')} className={inputClass}>
                 <option value="">Select bed</option>
-                {filteredBeds.map(b => <option key={b.id} value={b.id}>{b.bedNo}</option>)}
+                {beds.map(b => <option key={b.id} value={b.id}>{b.bedNo}</option>)}
               </select>
+              {beds.length === 0 && selectedRoomId && <p className="text-xs text-amber-500 mt-1">No available beds for this room</p>}
               {errors.bedId && <p className={errorClass}>{errors.bedId.message}</p>}
             </div>
             <div className="space-y-1.5">

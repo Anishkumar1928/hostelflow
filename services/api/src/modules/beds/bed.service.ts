@@ -73,3 +73,25 @@ export const remove = async (id: string) => {
   await prisma.bed.delete({ where: { id } });
   return { id };
 };
+
+export const bulkCreate = async (input: { roomId: string; count: number; prefix?: string }) => {
+  const room = await prisma.room.findUnique({ where: { id: input.roomId } });
+  if (!room) throw new ApiError(404, 'Room not found');
+
+  const existing = await prisma.bed.count({ where: { roomId: input.roomId } });
+  const beds = [];
+  for (let i = 1; i <= input.count; i++) {
+    const bedNumber = input.prefix
+      ? `${input.prefix}-${existing + i}`
+      : `B${String.fromCharCode(64 + existing + i)}`;
+    beds.push({ roomId: input.roomId, bedNumber, status: 'AVAILABLE' });
+  }
+
+  await prisma.bed.createMany({ data: beds });
+  const created = await prisma.bed.findMany({
+    where: { roomId: input.roomId },
+    orderBy: { bedNumber: 'asc' },
+    include,
+  });
+  return created;
+};

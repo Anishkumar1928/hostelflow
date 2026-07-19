@@ -19,3 +19,9 @@ export const querySchema = z.object({
   status: z.string().optional(),
   studentId: z.string().optional(),
 });
+
+export const bulkCreateSchema = z.object({
+  roomId: z.string().uuid('Room is required'),
+  count: z.number().int().min(1).max(50),
+  prefix: z.string().max(20).optional(),
+});

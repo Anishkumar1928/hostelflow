@@ -11,7 +11,7 @@ import { PageHeader } from '../../components/ui/PageHeader';
 import { RoomDetailsCard } from '../../components/admin/room/RoomDetailsCard';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useNotify } from '../../context/NotificationContext';
-import { Loader2, Edit3, Trash2, ArrowLeft, RefreshCw, Clock, History } from 'lucide-react';
+import { Loader2, Edit3, Trash2, ArrowLeft, RefreshCw, Clock, History, Plus } from 'lucide-react';
 
 type Tab = 'details' | 'history';
 
@@ -56,6 +56,9 @@ export function RoomDetailsPage() {
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [genCount, setGenCount] = useState(4);
   const [activeTab, setActiveTab] = useState<Tab>('details');
   const [roomEvents, setRoomEvents] = useState<RoomEvent[]>([]);
   const [bedEvents, setBedEvents] = useState<BedEvent[]>([]);
@@ -98,6 +101,20 @@ export function RoomDetailsPage() {
     }
     setDeleting(false);
     setShowDelete(false);
+  };
+
+  const handleGenerateBeds = async () => {
+    if (!room) return;
+    setGenerating(true);
+    const res = await bedService.bulkGenerate(room.id, genCount, room.roomNo);
+    if (res.success) {
+      addToast(`${genCount} beds generated`, 'success');
+      setBeds(prev => [...(res.data || [])]);
+    } else {
+      addToast(res.error || 'Failed to generate beds', 'error');
+    }
+    setGenerating(false);
+    setShowGenerate(false);
   };
 
   const handleSync = async () => {
@@ -146,6 +163,10 @@ export function RoomDetailsPage() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back
             </Link>
+            <button onClick={() => setShowGenerate(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 transition-colors">
+              <Plus className="w-4 h-4" /> Generate Beds
+            </button>
             <button onClick={handleSync} disabled={syncing}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} /> Sync
@@ -240,6 +261,30 @@ export function RoomDetailsPage() {
         variant="danger"
         loading={deleting}
       />
+
+      {showGenerate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowGenerate(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-slate-200 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Generate Beds</h3>
+            <p className="text-sm text-slate-500 mb-4">Add beds to {room.roomNo}. Current beds: {beds.length}</p>
+            <div className="space-y-1.5 mb-6">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Number of beds</label>
+              <input type="number" min={1} max={50} value={genCount}
+                onChange={e => setGenCount(Number(e.target.value))}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm" />
+            </div>
+            <div className="flex items-center justify-end gap-3">
+              <button onClick={() => setShowGenerate(false)}
+                className="px-4 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+              <button onClick={handleGenerateBeds} disabled={generating || genCount < 1}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-500 disabled:opacity-50 transition-colors flex items-center gap-2">
+                {generating && <Loader2 className="w-4 h-4 animate-spin" />}
+                Generate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

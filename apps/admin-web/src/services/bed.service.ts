@@ -1,4 +1,4 @@
-import { api, mockApiCall } from '../api/client';
+import { api } from '../api/client';
 import type { ApiResponse, Bed } from '../types';
 
 function toBed(d: any): Bed {
@@ -8,73 +8,65 @@ function toBed(d: any): Bed {
     bedNo: d.bedNumber || d.bedNo || '',
     status: d.status === 'AVAILABLE' ? 'Available' : d.status === 'OCCUPIED' ? 'Occupied' : d.status || 'Available',
     studentId: d.studentId || undefined,
-    isDeleted: d.isDeleted || false,
   };
 }
 
-/** Generate mock beds on the fly for any room ID */
-function generateMockBeds(roomId: string, count: number): Bed[] {
-  const beds: Bed[] = [];
-  for (let i = 1; i <= count; i++) {
-    beds.push({
-      id: `mock-bed-${roomId}-${i}`,
-      roomId,
-      bedNo: `B-${String.fromCharCode(64 + i)}`,
-      status: 'Available',
-      isDeleted: false,
-    });
-  }
-  return beds;
+function extractList(res: any): Bed[] {
+  if (!res.success) return [];
+  const raw = res.data?.data ?? (Array.isArray(res.data) ? res.data : []);
+  return Array.isArray(raw) ? raw.map(toBed) : [];
 }
 
 class BedService {
+  /** Get ALL beds for a room (any status) */
   async getByRoom(roomId: string): Promise<ApiResponse<Bed[]>> {
+    if (!roomId) return { success: true, data: [] };
     try {
       const res = await api.get<any>(`/beds?roomId=${roomId}`);
-      if (res.success) {
-        const data = res.data?.data ?? res.data ?? [];
-        if (Array.isArray(data) && data.length > 0) {
-          return { success: true, data: data.map(toBed) };
-        }
-      }
-    } catch {}
-    return { success: true, data: generateMockBeds(roomId, 4) };
+      return { success: true, data: extractList(res) };
+    } catch {
+      return { success: true, data: [] };
+    }
   }
 
+  /** Get only AVAILABLE beds for a room */
   async getAvailableByRoom(roomId: string): Promise<ApiResponse<Bed[]>> {
+    if (!roomId) return { success: true, data: [] };
     try {
       const res = await api.get<any>(`/beds?roomId=${roomId}&status=AVAILABLE`);
-      if (res.success) {
-        const data = res.data?.data ?? res.data ?? [];
-        if (Array.isArray(data) && data.length > 0) {
-          return { success: true, data: data.map(toBed) };
-        }
-      }
+      const beds = extractList(res);
+      if (beds.length > 0) return { success: true, data: beds };
     } catch {}
 
-    // Fallback: try without status filter, then filter client-side
     try {
       const res = await api.get<any>(`/beds?roomId=${roomId}`);
+      const all = extractList(res);
+      return { success: true, data: all.filter(b => b.status === 'Available') };
+    } catch {
+      return { success: true, data: [] };
+    }
+  }
+
+  /** Generate beds for a room via API */
+  async bulkGenerate(roomId: string, count: number, prefix?: string): Promise<ApiResponse<Bed[]>> {
+    try {
+      const res = await api.post<any>(`/beds/bulk`, { roomId, count, prefix });
       if (res.success) {
-        const data = res.data?.data ?? res.data ?? [];
-        if (Array.isArray(data) && data.length > 0) {
-          const all = data.map(toBed);
-          return { success: true, data: all.filter(b => b.status === 'Available') };
-        }
+        return { success: true, data: extractList(res) };
       }
     } catch {}
-
-    return { success: true, data: generateMockBeds(roomId, 4) };
+    return { success: false, error: 'Failed to generate beds' };
   }
 
   async getById(id: string): Promise<ApiResponse<Bed>> {
     try {
       const res = await api.get<any>(`/beds/${id}`);
-      if (res.success && res.data) {
-        return { success: true, data: toBed(res.data) };
+      if (res.success) {
+        const d = res.data?.data ?? res.data;
+        return { success: true, data: toBed(d) };
       }
     } catch {}
-    return { success: true, data: { id, roomId: '', bedNo: id, status: 'Available', isDeleted: false } };
+    return { success: false, error: 'Bed not found' };
   }
 }
 
