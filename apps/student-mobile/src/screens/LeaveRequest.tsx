@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal, Platform, TouchableOpacity } from "react-native";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -10,27 +11,46 @@ import { colors, spacing, radius } from "../theme/tokens";
 
 const LEAVE_TYPES = ["Medical", "Personal", "Family", "Emergency", "Other"];
 
+function fmt(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export default function LeaveRequest() {
   const navigation = useNavigation<any>();
   const [leaveType, setLeaveType] = useState("Personal");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState(new Date());
+  const [toDate, setToDate] = useState(new Date());
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [showTypePicker, setShowTypePicker] = useState(false);
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showToPicker, setShowToPicker] = useState(false);
+
+  const onFromChange = (_: DateTimePickerEvent, d?: Date) => {
+    if (Platform.OS === "android") setShowFromPicker(false);
+    if (d) { setFromDate(d); if (d > toDate) setToDate(d); }
+  };
+
+  const onToChange = (_: DateTimePickerEvent, d?: Date) => {
+    if (Platform.OS === "android") setShowToPicker(false);
+    if (d) setToDate(d);
+  };
 
   const handleSubmit = async () => {
-    if (!fromDate || !toDate || !reason) {
-      Alert.alert("Error", "Please fill all fields");
+    if (!reason) {
+      Alert.alert("Error", "Please enter a reason");
       return;
     }
-    const studentId = authStore.getUser()?.id ?? "temp-student-id";
+    const studentId = authStore.getUser()?.id ?? "";
     setLoading(true);
     const res = await leaveService.applyLeave({
       studentId,
       leaveType,
-      fromDate,
-      toDate,
+      fromDate: fmt(fromDate),
+      toDate: fmt(toDate),
       reason,
     });
     setLoading(false);
@@ -56,22 +76,42 @@ export default function LeaveRequest() {
         </Pressable>
 
         <Text style={{ color: colors.onSurfaceVariant, fontSize: 12, fontWeight: "500", textTransform: "uppercase", marginBottom: spacing.sm }}>From Date</Text>
-        <TextInput
-          value={fromDate}
-          onChangeText={setFromDate}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor="#9ca3af"
-          style={{ backgroundColor: colors.surfaceContainerLowest, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.lg, paddingHorizontal: spacing.md, paddingVertical: 14, marginBottom: spacing.md, color: colors.onSurface, fontSize: 16 }}
-        />
+        <Pressable
+          onPress={() => setShowFromPicker(true)}
+          style={{ backgroundColor: colors.surfaceContainerLowest, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.lg, paddingHorizontal: spacing.md, paddingVertical: 14, marginBottom: spacing.md, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
+        >
+          <Text style={{ color: colors.onSurface, fontSize: 16 }}>{fmt(fromDate)}</Text>
+          <MaterialIcons name="calendar-month" size={22} color={colors.primary} />
+        </Pressable>
+        {showFromPicker && Platform.OS === "ios" ? (
+          <View style={{ backgroundColor: colors.surfaceContainerLow, borderRadius: radius.lg, marginBottom: spacing.md, overflow: "hidden" }}>
+            <DateTimePicker value={fromDate} mode="date" display="spinner" onChange={onFromChange} minimumDate={new Date()} />
+            <TouchableOpacity onPress={() => setShowFromPicker(false)} style={{ paddingVertical: 10, alignItems: "center", borderTopWidth: 1, borderTopColor: colors.outlineVariant }}>
+              <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 16 }}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        ) : showFromPicker ? (
+          <DateTimePicker value={fromDate} mode="date" display="default" onChange={onFromChange} minimumDate={new Date()} />
+        ) : null}
 
         <Text style={{ color: colors.onSurfaceVariant, fontSize: 12, fontWeight: "500", textTransform: "uppercase", marginBottom: spacing.sm }}>To Date</Text>
-        <TextInput
-          value={toDate}
-          onChangeText={setToDate}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor="#9ca3af"
-          style={{ backgroundColor: colors.surfaceContainerLowest, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.lg, paddingHorizontal: spacing.md, paddingVertical: 14, marginBottom: spacing.md, color: colors.onSurface, fontSize: 16 }}
-        />
+        <Pressable
+          onPress={() => setShowToPicker(true)}
+          style={{ backgroundColor: colors.surfaceContainerLowest, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.lg, paddingHorizontal: spacing.md, paddingVertical: 14, marginBottom: spacing.md, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
+        >
+          <Text style={{ color: colors.onSurface, fontSize: 16 }}>{fmt(toDate)}</Text>
+          <MaterialIcons name="calendar-month" size={22} color={colors.primary} />
+        </Pressable>
+        {showToPicker && Platform.OS === "ios" ? (
+          <View style={{ backgroundColor: colors.surfaceContainerLow, borderRadius: radius.lg, marginBottom: spacing.md, overflow: "hidden" }}>
+            <DateTimePicker value={toDate} mode="date" display="spinner" onChange={onToChange} minimumDate={fromDate} />
+            <TouchableOpacity onPress={() => setShowToPicker(false)} style={{ paddingVertical: 10, alignItems: "center", borderTopWidth: 1, borderTopColor: colors.outlineVariant }}>
+              <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 16 }}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        ) : showToPicker ? (
+          <DateTimePicker value={toDate} mode="date" display="default" onChange={onToChange} minimumDate={fromDate} />
+        ) : null}
 
         <Text style={{ color: colors.onSurfaceVariant, fontSize: 12, fontWeight: "500", textTransform: "uppercase", marginBottom: spacing.sm }}>Reason</Text>
         <TextInput
