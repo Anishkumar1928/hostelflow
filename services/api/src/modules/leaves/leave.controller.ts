@@ -30,12 +30,12 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const approve = asyncHandler(async (req: Request, res: Response) => {
-  const data = await service.approve(req.params.id, req.body.approvedBy, req.body.remarks);
+  const data = await service.approve(req.params.id, req.user!.userId, req.body.remarks);
   sendSuccess(res, data, 'Leave approved');
 });
 
 export const reject = asyncHandler(async (req: Request, res: Response) => {
-  const data = await service.reject(req.params.id, req.body.approvedBy, req.body.remarks);
+  const data = await service.reject(req.params.id, req.user!.userId, req.body.remarks);
   sendSuccess(res, data, 'Leave rejected');
 });
 

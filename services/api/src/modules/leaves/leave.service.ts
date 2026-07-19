@@ -46,7 +46,7 @@ function mapLeave(l: any) {
     toDate: l.toDate ? new Date(l.toDate).toISOString().split('T')[0] : '',
     reason: l.reason || '',
     status: STATUS_MAP[l.status as string] || l.status,
-    approvedBy: l.approvedBy || undefined,
+    approvedBy: l.approvedByUser?.fullName || l.approvedBy || undefined,
     remarks: l.remarks || undefined,
     isDeleted: l.isDeleted || false,
     createdAt: l.createdAt?.toISOString() || '',
