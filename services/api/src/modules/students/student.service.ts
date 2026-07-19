@@ -23,6 +23,8 @@ const studentSelect = {
   status: true,
   feeStatus: true,
   admissionDate: true,
+  createdAt: true,
+  updatedAt: true,
   user: {
     select: { id: true, fullName: true, email: true, phone: true, status: true, createdAt: true },
   },

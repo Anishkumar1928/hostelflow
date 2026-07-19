@@ -60,6 +60,8 @@ model Student {
   status                 String?   @default("Active") @db.VarChar(20)
   feeStatus              String?   @default("PENDING") @map("fee_status") @db.VarChar(20)
   admissionDate          DateTime? @map("admission_date") @db.Date
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
   user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   applications     Application[]
