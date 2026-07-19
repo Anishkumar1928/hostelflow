@@ -17,7 +17,7 @@ const NAV_ITEMS: Record<string, { id: string; label: string; icon: string; path:
     { id: 'allocations', label: 'Room Application', icon: 'CheckSquare', path: '/admin/allocations' },
     { id: 'fees', label: 'Fees Management', icon: 'Wallet', path: '/admin/fees' },
     { id: 'attendance', label: 'Attendance', icon: 'ClipboardCheck', path: '/admin/attendance' },
-    { id: 'leave', label: 'Leave Requests', icon: 'Calendar', path: '/admin/leave' },
+    { id: 'leaves', label: 'Leave Requests', icon: 'Calendar', path: '/admin/leaves' },
     { id: 'visitors', label: 'Visitors', icon: 'Users2', path: '/admin/visitors' },
     { id: 'complaints', label: 'Complaints', icon: 'AlertTriangle', path: '/admin/complaints' },
     { id: 'mess', label: 'Mess Management', icon: 'UtensilsCrossed', path: '/admin/mess' },

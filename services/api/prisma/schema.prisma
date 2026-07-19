@@ -178,13 +178,17 @@ model Attendance {
 }
 
 model Leave {
-  id         String   @id @default(uuid()) @db.Uuid
-  studentId  String   @map("student_id") @db.Uuid
+  id         String    @id @default(uuid()) @db.Uuid
+  studentId  String    @map("student_id") @db.Uuid
+  leaveType  String    @default("Personal") @map("leave_type") @db.VarChar(30)
   fromDate   DateTime? @map("from_date") @db.Date
   toDate     DateTime? @map("to_date") @db.Date
-  reason     String?  @db.Text
-  approvedBy String?  @map("approved_by") @db.Uuid
-  status     String   @default("PENDING") @db.VarChar(20)
+  reason     String?   @db.Text
+  status     String    @default("PENDING") @db.VarChar(20)
+  approvedBy String?   @map("approved_by") @db.Uuid
+  remarks    String?   @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   student    Student @relation(fields: [studentId], references: [id])
   approvedByUser User? @relation("ApprovedBy", fields: [approvedBy], references: [id])
