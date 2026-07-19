@@ -1,4 +1,5 @@
 import { BaseService } from './base.service';
+import { api, mockApiCall } from '../api/client';
 import type { ApiResponse, Staff } from '../types';
 import { INITIAL_STAFF } from '../data';
 
@@ -26,17 +27,16 @@ class StaffService extends BaseService<Staff> {
 
   async getAll(): Promise<ApiResponse<Staff[]>> {
     try {
-      const res = await super.getAll();
-      if (res.success && res.data && Array.isArray(res.data)) {
-        const isFromApi = res.data.length > 0 && 'fullName' in res.data[0];
-        if (isFromApi) {
-          return { success: true, data: res.data.map(u => this.toStaff(u)) };
+      const res = await api.get<Staff[]>(`/users?roles=STAFF,WARDEN,ADMIN,SECURITY`);
+      if (res.success && res.data) {
+        const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data ?? [];
+        if (data.length > 0 && 'fullName' in data[0]) {
+          return { success: true, data: data.map(u => this.toStaff(u)) };
         }
+        return { success: true, data: data as Staff[] };
       }
-      return res;
-    } catch {
-      return { success: false, error: 'Failed to fetch' };
-    }
+    } catch {}
+    return mockApiCall(this.getAllFromStorage());
   }
 
   async getById(id: string): Promise<ApiResponse<Staff>> {

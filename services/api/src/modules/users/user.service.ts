@@ -30,6 +30,10 @@ export const list = async (params: any) => {
       { phone: { contains: search, mode: 'insensitive' } },
     ];
   }
+  if (params.roles) {
+    const roles = params.roles.split(',').map((r: string) => r.trim().toUpperCase());
+    where.role = { name: { in: roles } };
+  }
 
   const orderBy: any = {};
   const sortMap: Record<string, string> = { name: 'fullName', createdAt: 'createdAt', email: 'email' };
