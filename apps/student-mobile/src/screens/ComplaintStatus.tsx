@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, Card, Badge, PrimaryButton } from "../components/UI";
 import { complaintService } from "../services/complaint.service";
+import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
 import { colors, spacing, radius } from "../theme/tokens";
 
@@ -27,19 +28,29 @@ export default function ComplaintStatus() {
   const navigation = useNavigation<any>();
   const [complaints, setComplaints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [studentId, setStudentId] = useState<string>("");
+
+  useEffect(() => {
+    const user = authStore.getUser();
+    if (!user?.id) { setLoading(false); return; }
+    studentService.getByUserId(user.id).then(res => {
+      const sid = res.success && res.data ? res.data.id : user.id;
+      setStudentId(sid);
+    });
+  }, []);
 
   const fetchComplaints = useCallback(async () => {
-    const studentId = authStore.getUser()?.id ?? "temp-student-id";
+    if (!studentId) return;
     setLoading(true);
     const res = await complaintService.getByStudent(studentId);
     if (res.success && res.data) setComplaints(res.data);
     setLoading(false);
-  }, []);
+  }, [studentId]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchComplaints();
-    }, [fetchComplaints])
+      if (studentId) fetchComplaints();
+    }, [fetchComplaints, studentId])
   );
 
   return (

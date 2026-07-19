@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, PrimaryButton } from "../components/UI";
 import { complaintService } from "../services/complaint.service";
+import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
 import { colors, spacing, radius } from "../theme/tokens";
 
@@ -18,8 +19,18 @@ export default function Complaint() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
+  const [studentProfile, setStudentProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const user = authStore.getUser();
+    if (!user?.id) { setProfileLoading(false); return; }
+    studentService.getByUserId(user.id).then(res => {
+      if (res.success && res.data) setStudentProfile(res.data);
+    }).finally(() => setProfileLoading(false));
+  }, []);
 
   const handleSubmit = async () => {
     if (!title || !description) {
@@ -27,7 +38,9 @@ export default function Complaint() {
       return;
     }
     const user = authStore.getUser();
-    const studentId = user?.id ?? "temp-student-id";
+    const studentId = studentProfile?.id || user?.id || "";
+    const roomNo = studentProfile?.roomNo || studentProfile?.allocations?.[0]?.room?.roomNumber || "";
+    const roomId = studentProfile?.roomId || studentProfile?.allocations?.[0]?.roomId || "";
     setLoading(true);
     const res = await complaintService.create({
       studentId,
@@ -35,8 +48,9 @@ export default function Complaint() {
       description,
       category,
       priority,
-      roomId: "temp-room-id",
-      studentName: user?.name,
+      roomId,
+      roomNo,
+      studentName: studentProfile?.name || user?.name,
     });
     setLoading(false);
     if (res.success) {
@@ -46,6 +60,17 @@ export default function Complaint() {
       Alert.alert("Error", res.error || "Failed to submit complaint");
     }
   };
+
+  if (profileLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
+        <StubHeader title="Raise Complaint" />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
