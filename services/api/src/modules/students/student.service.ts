@@ -5,20 +5,35 @@ const SALT_ROUNDS = 10;
 
 const studentSelect = {
   id: true,
+  registrationNo: true,
   enrollmentNo: true,
   course: true,
   department: true,
   year: true,
+  semester: true,
   gender: true,
   dob: true,
   guardianName: true,
   guardianPhone: true,
+  emergencyContactName: true,
+  emergencyContactPhone: true,
+  emergencyContactRelation: true,
   address: true,
   bloodGroup: true,
+  status: true,
+  feeStatus: true,
+  admissionDate: true,
   user: {
     select: { id: true, fullName: true, email: true, phone: true, status: true, createdAt: true },
   },
 };
+
+function extractYear(y: string | number | undefined | null): number | null {
+  if (!y) return null;
+  if (typeof y === 'number') return y;
+  const m = String(y).match(/\d+/);
+  return m ? parseInt(m[0]) : null;
+}
 
 export const list = async (params: any) => {
   const page = Math.max(1, parseInt(params.page) || 1);
@@ -34,13 +49,14 @@ export const list = async (params: any) => {
       { user: { fullName: { contains: search, mode: 'insensitive' } } },
       { user: { email: { contains: search, mode: 'insensitive' } } },
       { enrollmentNo: { contains: search, mode: 'insensitive' } },
+      { registrationNo: { contains: search, mode: 'insensitive' } },
       { course: { contains: search, mode: 'insensitive' } },
       { department: { contains: search, mode: 'insensitive' } },
     ];
   }
   if (params.gender) where.gender = params.gender;
   if (params.department) where.department = params.department;
-  if (params.status) where.user = { ...where.user, status: params.status === 'Active' ? true : params.status === 'Inactive' ? false : undefined };
+  if (params.status && params.status !== 'all') where.status = params.status;
 
   const orderBy: any = {};
   const sortMap: Record<string, string> = { name: 'user_fullName', createdAt: 'createdAt', enrollmentNo: 'enrollmentNo' };
@@ -83,16 +99,24 @@ export const create = async (data: any) => {
     return tx.student.create({
       data: {
         userId: user.id,
+        registrationNo: data.registrationNo || null,
         enrollmentNo: data.enrollmentNo || null,
         course: data.course || null,
         department: data.department || null,
-        year: data.year ? parseInt(data.year) : null,
+        year: extractYear(data.year),
+        semester: data.semester || null,
         gender: data.gender || null,
         dob: data.dob ? new Date(data.dob) : null,
         guardianName: data.parentName || data.guardianName || null,
         guardianPhone: data.parentContact || data.guardianPhone || null,
+        emergencyContactName: data.emergencyContactName || null,
+        emergencyContactPhone: data.emergencyContactPhone || null,
+        emergencyContactRelation: data.emergencyContactRelation || null,
         address: data.address || null,
         bloodGroup: data.bloodGroup || null,
+        status: data.status || 'Active',
+        feeStatus: data.feeStatus || 'PENDING',
+        admissionDate: data.admissionDate ? new Date(data.admissionDate) : null,
       },
       select: studentSelect,
     });
@@ -105,18 +129,26 @@ export const update = async (id: string, data: any) => {
 
   return prisma.$transaction(async (tx) => {
     const studentData: any = {};
+    if (data.registrationNo !== undefined) studentData.registrationNo = data.registrationNo;
     if (data.enrollmentNo !== undefined) studentData.enrollmentNo = data.enrollmentNo;
     if (data.course !== undefined) studentData.course = data.course;
     if (data.department !== undefined) studentData.department = data.department;
-    if (data.year !== undefined) studentData.year = parseInt(data.year);
+    if (data.year !== undefined) studentData.year = extractYear(data.year);
+    if (data.semester !== undefined) studentData.semester = data.semester;
     if (data.gender !== undefined) studentData.gender = data.gender;
     if (data.dob !== undefined) studentData.dob = data.dob ? new Date(data.dob) : null;
     if (data.parentName !== undefined) studentData.guardianName = data.parentName;
     if (data.guardianName !== undefined) studentData.guardianName = data.guardianName;
     if (data.parentContact !== undefined) studentData.guardianPhone = data.parentContact;
     if (data.guardianPhone !== undefined) studentData.guardianPhone = data.guardianPhone;
+    if (data.emergencyContactName !== undefined) studentData.emergencyContactName = data.emergencyContactName;
+    if (data.emergencyContactPhone !== undefined) studentData.emergencyContactPhone = data.emergencyContactPhone;
+    if (data.emergencyContactRelation !== undefined) studentData.emergencyContactRelation = data.emergencyContactRelation;
     if (data.address !== undefined) studentData.address = data.address;
     if (data.bloodGroup !== undefined) studentData.bloodGroup = data.bloodGroup;
+    if (data.status !== undefined) studentData.status = data.status;
+    if (data.feeStatus !== undefined) studentData.feeStatus = data.feeStatus;
+    if (data.admissionDate !== undefined) studentData.admissionDate = data.admissionDate ? new Date(data.admissionDate) : null;
 
     if (Object.keys(studentData).length > 0) {
       await tx.student.update({ where: { id }, data: studentData });
@@ -127,7 +159,8 @@ export const update = async (id: string, data: any) => {
     if (data.name) userData.fullName = data.name;
     if (data.email) userData.email = data.email;
     if (data.phone !== undefined) userData.phone = data.phone;
-    if (data.status) userData.status = data.status === 'Active' ? true : false;
+    if (data.status === 'Active') userData.status = true;
+    else if (data.status === 'Inactive') userData.status = false;
 
     if (Object.keys(userData).length > 0) {
       await tx.user.update({ where: { id: student.userId }, data: userData });

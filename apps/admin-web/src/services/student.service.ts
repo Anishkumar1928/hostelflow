@@ -12,6 +12,8 @@ function extractYear(y: string | number | undefined | null): number | null {
 }
 
 function toStudent(d: any): Student {
+  const ey = extractYear(d.year);
+  const ySuffix = ey ? (['th', 'st', 'nd', 'rd'][ey % 10 > 3 ? 0 : ey % 10] || 'th') : '';
   return {
     id: d.id,
     userId: d.userId || d.user?.id || '',
@@ -26,7 +28,7 @@ function toStudent(d: any): Student {
     registrationNo: d.registrationNo || '',
     department: d.department || '',
     course: d.course || '',
-    year: d.year ? `${extractYear(d.year)}${['th', 'st', 'nd', 'rd'][(extractYear(d.year) || 0) % 10 > 3 ? 0 : (extractYear(d.year) || 0) % 10] || 'th'} Year` : '',
+    year: ey ? `${ey}${ySuffix} Year` : '',
     semester: d.semester || '',
     parentName: d.guardianName || d.parentName || '',
     parentContact: d.guardianPhone || d.parentContact || '',
@@ -36,9 +38,9 @@ function toStudent(d: any): Student {
     hostelId: d.hostelId || '',
     roomId: d.roomId || '',
     roomNo: d.roomNo || '',
-    status: d.user?.status === false ? 'Inactive' : d.status === 'Inactive' ? 'Inactive' : (d.status || 'Active'),
+    status: d.status || (d.user?.status === false ? 'Inactive' : 'Active'),
     feeStatus: d.feeStatus || 'PENDING',
-    admissionDate: d.createdAt || d.admissionDate ? new Date(d.createdAt || d.admissionDate).toISOString().split('T')[0] : '',
+    admissionDate: d.admissionDate ? new Date(d.admissionDate).toISOString().split('T')[0] : (d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : ''),
     createdAt: d.createdAt || '',
     updatedAt: d.updatedAt || '',
     isDeleted: d.isDeleted || false,
@@ -50,17 +52,24 @@ function toBackend(item: any): any {
     name: item.name,
     email: item.email,
     phone: item.phone,
+    registrationNo: item.registrationNo,
     enrollmentNo: item.enrollmentNo,
     course: item.course,
     department: item.department,
     year: item.year,
+    semester: item.semester,
     gender: item.gender,
     dob: item.dob,
     parentName: item.parentName,
     parentContact: item.parentContact,
+    emergencyContactName: item.emergencyContactName,
+    emergencyContactPhone: item.emergencyContactPhone,
+    emergencyContactRelation: item.emergencyContactRelation,
     address: item.address,
     bloodGroup: item.bloodGroup,
     status: item.status,
+    feeStatus: item.feeStatus,
+    admissionDate: item.admissionDate,
   };
 }
 

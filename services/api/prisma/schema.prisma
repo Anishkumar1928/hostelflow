@@ -40,18 +40,26 @@ model User {
 }
 
 model Student {
-  id            String  @id @default(uuid()) @db.Uuid
-  userId        String  @unique @map("user_id") @db.Uuid
-  enrollmentNo  String? @unique @map("enrollment_no") @db.VarChar(50)
-  course        String? @db.VarChar(100)
-  department    String? @db.VarChar(100)
-  year          Int?
-  gender        String? @db.VarChar(20)
-  dob           DateTime? @db.Date
-  guardianName  String? @map("guardian_name") @db.VarChar(100)
-  guardianPhone String? @map("guardian_phone") @db.VarChar(20)
-  address       String? @db.Text
-  bloodGroup    String? @map("blood_group") @db.VarChar(10)
+  id                     String    @id @default(uuid()) @db.Uuid
+  userId                 String    @unique @map("user_id") @db.Uuid
+  registrationNo         String?   @unique @map("registration_no") @db.VarChar(50)
+  enrollmentNo           String?   @unique @map("enrollment_no") @db.VarChar(50)
+  course                 String?   @db.VarChar(100)
+  department             String?   @db.VarChar(100)
+  year                   Int?
+  semester               String?   @db.VarChar(20)
+  gender                 String?   @db.VarChar(20)
+  dob                    DateTime? @db.Date
+  guardianName           String?   @map("guardian_name") @db.VarChar(100)
+  guardianPhone          String?   @map("guardian_phone") @db.VarChar(20)
+  emergencyContactName   String?   @map("emergency_contact_name") @db.VarChar(100)
+  emergencyContactPhone  String?   @map("emergency_contact_phone") @db.VarChar(20)
+  emergencyContactRelation String? @map("emergency_contact_relation") @db.VarChar(50)
+  address                String?   @db.Text
+  bloodGroup             String?   @map("blood_group") @db.VarChar(10)
+  status                 String?   @default("Active") @db.VarChar(20)
+  feeStatus              String?   @default("PENDING") @map("fee_status") @db.VarChar(20)
+  admissionDate          DateTime? @map("admission_date") @db.Date
 
   user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   applications     Application[]
