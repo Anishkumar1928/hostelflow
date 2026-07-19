@@ -58,4 +58,6 @@ docker/pgdata/
 # Firebase
 *-firebase-adminsdk-*.json
 .vercel
-.env*
+.env
+.env.local
+.env.*.local
