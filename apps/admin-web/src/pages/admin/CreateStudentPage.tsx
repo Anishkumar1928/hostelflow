@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
+import { studentService } from '../../services/student.service';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { useNotify } from '../../context/NotificationContext';
 import { Loader2, CheckCircle, Copy, Printer } from 'lucide-react';
@@ -38,6 +39,15 @@ export function CreateStudentPage() {
     e.preventDefault();
     if (!name || !email || !phone || !enrollmentNo || !department || !course || !year || !semester || !parentName || !parentContact || !emergencyContactName || !emergencyContactPhone || !admissionDate) {
       addToast('Please fill in all required fields', 'error');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      addToast('Please enter a valid email address', 'error');
+      return;
+    }
+    const emailCheck = await studentService.checkEmailUnique(email);
+    if (emailCheck.success && emailCheck.data) {
+      addToast('This email is already in use', 'error');
       return;
     }
     if (dob) {

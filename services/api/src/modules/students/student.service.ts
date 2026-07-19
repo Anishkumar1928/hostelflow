@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import prisma from '../../config/database';
 import bcrypt from 'bcryptjs';
+import { ApiError } from '../../utils/apiResponse';
 
 const SALT_ROUNDS = 10;
 
@@ -105,6 +106,9 @@ export const getByUserId = async (userId: string) => {
 };
 
 export const create = async (data: any) => {
+  const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+  if (existingUser) throw new ApiError(400, 'Email is already in use');
+
   const role = await prisma.role.findFirst({ where: { name: 'STUDENT' } });
   if (!role) throw new Error('STUDENT role not found');
 
@@ -155,6 +159,11 @@ export const create = async (data: any) => {
 export const update = async (id: string, data: any) => {
   const student = await prisma.student.findUnique({ where: { id } });
   if (!student) throw new Error('Student not found');
+
+  if (data.email) {
+    const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+    if (existingUser && existingUser.id !== student.userId) throw new ApiError(400, 'Email is already in use by another student');
+  }
 
   return prisma.$transaction(async (tx) => {
     const studentData: any = {};

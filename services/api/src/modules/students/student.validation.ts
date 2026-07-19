@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const createSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email'),
+  email: z.string().trim().email('Invalid email format'),
   phone: z.string().min(1, 'Phone is required'),
   password: z.string().min(6).optional(),
   registrationNo: z.string().optional(),
@@ -37,7 +37,7 @@ export const createSchema = z.object({
 
 export const updateSchema = z.object({
   name: z.string().min(1).optional(),
-  email: z.string().email().optional(),
+  email: z.string().trim().email('Invalid email format'),
   phone: z.string().optional(),
   registrationNo: z.string().optional(),
   enrollmentNo: z.string().optional(),

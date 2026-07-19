@@ -75,6 +75,17 @@ export function EditStudentPage() {
       addToast('Please fill in all required fields', 'error');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      addToast('Please enter a valid email address', 'error');
+      return;
+    }
+    if (id) {
+      const emailCheck = await studentService.checkEmailUnique(email, id);
+      if (emailCheck.success && emailCheck.data) {
+        addToast('This email is already in use by another student', 'error');
+        return;
+      }
+    }
     if (dob) {
       const dobDate = new Date(dob);
       if (isNaN(dobDate.getTime())) {
