@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal, Platform, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal, Platform, TouchableOpacity, ActivityIndicator } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, PrimaryButton } from "../components/UI";
 import { leaveService } from "../services/leave.service";
+import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
 import { colors, spacing, radius } from "../theme/tokens";
 
@@ -25,9 +26,19 @@ export default function LeaveRequest() {
   const [toDate, setToDate] = useState(new Date());
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
+  const [studentProfile, setStudentProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const user = authStore.getUser();
+    if (!user?.id) { setProfileLoading(false); return; }
+    studentService.getByUserId(user.id).then(res => {
+      if (res.success && res.data) setStudentProfile(res.data);
+    }).finally(() => setProfileLoading(false));
+  }, []);
 
   const onFromChange = (_: DateTimePickerEvent, d?: Date) => {
     if (Platform.OS === "android") setShowFromPicker(false);
@@ -44,10 +55,10 @@ export default function LeaveRequest() {
       Alert.alert("Error", "Please enter a reason");
       return;
     }
-    const studentId = authStore.getUser()?.id ?? "";
+    const sid = studentProfile?.id || authStore.getUser()?.id || "";
     setLoading(true);
     const res = await leaveService.applyLeave({
-      studentId,
+      studentId: sid,
       leaveType,
       fromDate: fmt(fromDate),
       toDate: fmt(toDate),
@@ -61,6 +72,17 @@ export default function LeaveRequest() {
       Alert.alert("Error", res.error || "Failed to apply leave");
     }
   };
+
+  if (profileLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
+        <StubHeader title="Leave Request" />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
