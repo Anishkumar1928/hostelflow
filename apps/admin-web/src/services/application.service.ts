@@ -76,7 +76,7 @@ class ApplicationService {
   async createApplication(data: {
     studentId: string; preferredHostelId: string; preferredRoomType?: string; reason?: string;
     studentName?: string; course?: string; year?: string; academicYear?: string; semester?: string;
-    appliedDate?: string;
+    appliedDate?: string; preferredHostel?: string;
   }): Promise<ApiResponse<HostelApplication>> {
     try {
       const res = await api.post<any>('/applications', data);
