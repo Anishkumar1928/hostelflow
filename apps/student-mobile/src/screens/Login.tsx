@@ -19,14 +19,19 @@ export default function Login() {
       return;
     }
     setLoading(true);
-    const result = await authService.login(email, password);
-    setLoading(false);
-    if (result.success && result.data) {
-      authStore.setToken(result.data.accessToken);
-      authStore.setUser(result.data.user);
-      navigation.replace("MainTabs");
-    } else {
-      Alert.alert("Login Failed", result.error || "Something went wrong");
+    try {
+      const result = await authService.login(email, password);
+      if (result.success && result.data) {
+        authStore.setToken(result.data.accessToken);
+        authStore.setUser(result.data.user);
+        navigation.replace("MainTabs");
+      } else {
+        Alert.alert("Login Failed", result.error || "Something went wrong");
+      }
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "An unexpected error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
