@@ -64,7 +64,7 @@ export function HostelDetailsPage() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back
             </Link>
-            <Link to={`/admin/hostels/${hostel.id}/edit`}
+            <Link to={`/admin/hostels/${hostel.id}/edit`} state={{ name: hostel.name }}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors">
               <Edit3 className="w-4 h-4" /> Edit
             </Link>

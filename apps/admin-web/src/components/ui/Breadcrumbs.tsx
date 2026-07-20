@@ -27,7 +27,7 @@ export function Breadcrumbs() {
       </Link>
       {segments.map((seg, i) => {
         const isLast = i === segments.length - 1;
-        const label = isLast && state?.name
+        const label = state?.name && !LABEL_MAP[seg]
           ? state.name
           : LABEL_MAP[seg] || seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
         const href = '/' + segments.slice(0, i + 1).join('/');

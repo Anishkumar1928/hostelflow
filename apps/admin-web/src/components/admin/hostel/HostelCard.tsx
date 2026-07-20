@@ -20,11 +20,11 @@ export function HostelCard({ hostel, onDelete, idx = 0 }: HostelCardProps) {
           <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
         </div>
         <div className="flex items-center gap-1">
-          <Link to={`/admin/hostels/${hostel.id}`}
+          <Link to={`/admin/hostels/${hostel.id}`} state={{ name: hostel.name }}
             className="p-2 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all">
             <Eye className="w-4 h-4" />
           </Link>
-          <Link to={`/admin/hostels/${hostel.id}/edit`}
+          <Link to={`/admin/hostels/${hostel.id}/edit`} state={{ name: hostel.name }}
             className="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
             <Edit3 className="w-4 h-4" />
           </Link>

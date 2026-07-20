@@ -24,6 +24,12 @@ export function EditHostelPage() {
     });
   }, [id, navigate]);
 
+  useEffect(() => {
+    if (hostel) {
+      navigate(`/admin/hostels/${id}/edit`, { replace: true, state: { name: hostel.name } });
+    }
+  }, [hostel, id, navigate]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
