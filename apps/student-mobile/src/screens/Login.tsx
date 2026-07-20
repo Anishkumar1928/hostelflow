@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "../components/UI";
 import { useTheme } from "../theme/ThemeContext";
+import { authService } from "../services/auth.service";
 import { authStore } from "../services/authStore";
 
 export default function Login() {
