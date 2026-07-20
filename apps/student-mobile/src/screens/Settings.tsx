@@ -101,7 +101,7 @@ export default function SettingsScreen() {
   const handleLogout = () => {
     Alert.alert(t.logoutTitle, t.logoutMessage, [
       { text: t.logoutCancel, style: "cancel" },
-      { text: t.logoutConfirm, style: "destructive", onPress: () => { authStore.clear(); navigation.replace("Login"); } },
+      { text: t.logoutConfirm, style: "destructive", onPress: () => { authStore.clear(); navigation.reset({ index: 0, routes: [{ name: "Login" }] }); } },
     ]);
   };
 
