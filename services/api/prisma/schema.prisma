@@ -29,6 +29,7 @@ model User {
   role              Role                 @relation(fields: [roleId], references: [id])
   student           Student?
   wardenHostels     Hostel[]             @relation("WardenHostel")
+  wardenBuildings   Building[]           @relation("BuildingWarden")
   approvedLeaves    Leave[]              @relation("ApprovedBy")
   assignedComplaints Complaint[]         @relation("AssignedTo")
   markedAttendance  Attendance[]         @relation("MarkedBy")
@@ -40,18 +41,28 @@ model User {
 }
 
 model Student {
-  id            String  @id @default(uuid()) @db.Uuid
-  userId        String  @unique @map("user_id") @db.Uuid
-  enrollmentNo  String? @unique @map("enrollment_no") @db.VarChar(50)
-  course        String? @db.VarChar(100)
-  department    String? @db.VarChar(100)
-  year          Int?
-  gender        String? @db.VarChar(20)
-  dob           DateTime? @db.Date
-  guardianName  String? @map("guardian_name") @db.VarChar(100)
-  guardianPhone String? @map("guardian_phone") @db.VarChar(20)
-  address       String? @db.Text
-  bloodGroup    String? @map("blood_group") @db.VarChar(10)
+  id                     String    @id @default(uuid()) @db.Uuid
+  userId                 String    @unique @map("user_id") @db.Uuid
+  registrationNo         String?   @unique @map("registration_no") @db.VarChar(50)
+  enrollmentNo           String?   @unique @map("enrollment_no") @db.VarChar(50)
+  course                 String?   @db.VarChar(100)
+  department             String?   @db.VarChar(100)
+  year                   Int?
+  semester               String?   @db.VarChar(20)
+  gender                 String?   @db.VarChar(20)
+  dob                    DateTime? @db.Date
+  guardianName           String?   @map("guardian_name") @db.VarChar(100)
+  guardianPhone          String?   @map("guardian_phone") @db.VarChar(20)
+  emergencyContactName   String?   @map("emergency_contact_name") @db.VarChar(100)
+  emergencyContactPhone  String?   @map("emergency_contact_phone") @db.VarChar(20)
+  emergencyContactRelation String? @map("emergency_contact_relation") @db.VarChar(50)
+  address                String?   @db.Text
+  bloodGroup             String?   @map("blood_group") @db.VarChar(10)
+  status                 String?   @default("Active") @db.VarChar(20)
+  feeStatus              String?   @default("PENDING") @map("fee_status") @db.VarChar(20)
+  admissionDate          DateTime? @map("admission_date") @db.Date
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
   user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   applications     Application[]
@@ -73,19 +84,42 @@ model Hostel {
   hostelType String? @map("hostel_type") @db.VarChar(20)
   gender     String? @db.VarChar(20)
   capacity   Int?
+  floors     Int?
   address    String? @db.Text
   wardenId   String? @map("warden_id") @db.Uuid
 
   warden       User?          @relation("WardenHostel", fields: [wardenId], references: [id])
+  buildings    Building[]
   rooms        Room[]
   applications Application[]
 
   @@map("hostels")
 }
 
+model Building {
+  id          String  @id @default(uuid()) @db.Uuid
+  hostelId    String? @map("hostel_id") @db.Uuid
+  name        String  @db.VarChar(100)
+  code        String  @db.VarChar(30)
+  description String? @db.Text
+  gender      String? @db.VarChar(20)
+  floors      Int?
+  capacity    Int?
+  status      String  @default("Active") @db.VarChar(20)
+  wardenId    String? @map("warden_id") @db.Uuid
+
+  hostel Hostel? @relation(fields: [hostelId], references: [id], onDelete: SetNull)
+  rooms  Room[]
+  warden User?  @relation("BuildingWarden", fields: [wardenId], references: [id])
+
+  @@index([hostelId])
+  @@map("buildings")
+}
+
 model Room {
   id         String  @id @default(uuid()) @db.Uuid
-  hostelId   String  @map("hostel_id") @db.Uuid
+  hostelId   String? @map("hostel_id") @db.Uuid
+  buildingId String? @map("building_id") @db.Uuid
   roomNumber String  @map("room_number") @db.VarChar(20)
   floor      Int?
   roomType   String? @map("room_type") @db.VarChar(30)
@@ -94,41 +128,72 @@ model Room {
   price      Decimal? @db.Decimal(10, 2)
   status     String  @default("AVAILABLE") @db.VarChar(20)
 
-  hostel      Hostel       @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostel   Hostel?      @relation(fields: [hostelId], references: [id], onDelete: SetNull)
+  building Building?    @relation(fields: [buildingId], references: [id])
   allocations Allocation[]
+  beds         Bed[]
 
   @@index([hostelId])
+  @@index([buildingId])
   @@map("rooms")
 }
 
-model Application {
-  id                String   @id @default(uuid()) @db.Uuid
-  studentId         String   @map("student_id") @db.Uuid
-  hostelId          String   @map("hostel_id") @db.Uuid
-  preferredRoomType String?  @map("preferred_room_type") @db.VarChar(30)
-  reason            String?  @db.Text
-  status            String   @default("PENDING") @db.VarChar(20)
-  createdAt         DateTime @default(now()) @map("created_at")
+model Bed {
+  id        String @id @default(uuid()) @db.Uuid
+  roomId    String @map("room_id") @db.Uuid
+  bedNumber String @map("bed_number") @db.VarChar(20)
+  status    String @default("AVAILABLE") @db.VarChar(20)
+  studentId String? @map("student_id") @db.Uuid
 
-  student Student @relation(fields: [studentId], references: [id])
-  hostel  Hostel  @relation(fields: [hostelId], references: [id])
+  room        Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  allocations Allocation[]
+
+  @@index([roomId])
+  @@map("beds")
+}
+
+model Application {
+  id                String    @id @default(uuid()) @db.Uuid
+  studentId         String    @map("student_id") @db.Uuid
+  hostelId          String    @map("hostel_id") @db.Uuid
+  preferredRoomType String?   @map("preferred_room_type") @db.VarChar(30)
+  reason            String?   @db.Text
+  status            String    @default("PENDING") @db.VarChar(20)
+  reviewedBy        String?   @map("reviewed_by") @db.VarChar(100)
+  reviewedDate      DateTime? @map("reviewed_date") @db.Date
+  reviewRemarks     String?   @map("review_remarks") @db.Text
+  isDeleted         Boolean   @default(false) @map("is_deleted")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  student     Student       @relation(fields: [studentId], references: [id])
+  hostel      Hostel        @relation(fields: [hostelId], references: [id])
+  allocations Allocation[]
 
   @@map("applications")
 }
 
 model Allocation {
-  id            String   @id @default(uuid()) @db.Uuid
-  studentId     String   @map("student_id") @db.Uuid
-  roomId        String   @map("room_id") @db.Uuid
-  allocatedDate DateTime? @map("allocated_date") @db.Date
-  checkIn       DateTime? @map("check_in") @db.Date
-  checkOut      DateTime? @map("check_out") @db.Date
-  status        String   @default("ACTIVE") @db.VarChar(20)
+  id                 String   @id @default(uuid()) @db.Uuid
+  studentId          String   @map("student_id") @db.Uuid
+  roomId             String   @map("room_id") @db.Uuid
+  bedId              String?  @map("bed_id") @db.Uuid
+  applicationId      String?  @map("application_id") @db.Uuid
+  allocatedDate      DateTime? @map("allocated_date") @db.Date
+  expectedVacateDate DateTime? @map("expected_vacate_date") @db.Date
+  checkIn            DateTime? @map("check_in") @db.Date
+  checkOut           DateTime? @map("check_out") @db.Date
+  status             String   @default("ACTIVE") @db.VarChar(20)
+  transferHistory    Json?    @map("transfer_history")
 
-  student Student @relation(fields: [studentId], references: [id])
-  room    Room    @relation(fields: [roomId], references: [id])
+  student     Student      @relation(fields: [studentId], references: [id])
+  room        Room         @relation(fields: [roomId], references: [id])
+  bed         Bed?         @relation(fields: [bedId], references: [id], onDelete: SetNull)
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
 
   @@index([studentId])
+  @@index([roomId])
+  @@index([bedId])
   @@map("allocations")
 }
 
@@ -165,8 +230,8 @@ model Attendance {
   id             String    @id @default(uuid()) @db.Uuid
   studentId      String    @map("student_id") @db.Uuid
   attendanceDate DateTime? @map("attendance_date") @db.Date
-  checkIn        String?   @map("check_in") @db.Time
-  checkOut       String?   @map("check_out") @db.Time
+  checkIn        String?   @map("check_in")
+  checkOut       String?   @map("check_out")
   status         String?   @db.VarChar(20)
   markedBy       String?   @map("marked_by") @db.Uuid
 
@@ -178,13 +243,18 @@ model Attendance {
 }
 
 model Leave {
-  id         String   @id @default(uuid()) @db.Uuid
-  studentId  String   @map("student_id") @db.Uuid
+  id         String    @id @default(uuid()) @db.Uuid
+  studentId  String    @map("student_id") @db.Uuid
+  leaveType  String    @default("Personal") @map("leave_type") @db.VarChar(30)
   fromDate   DateTime? @map("from_date") @db.Date
   toDate     DateTime? @map("to_date") @db.Date
-  reason     String?  @db.Text
-  approvedBy String?  @map("approved_by") @db.Uuid
-  status     String   @default("PENDING") @db.VarChar(20)
+  reason     String?   @db.Text
+  status     String    @default("PENDING") @db.VarChar(20)
+  approvedBy String?   @map("approved_by") @db.Uuid
+  remarks    String?   @db.Text
+  isDeleted  Boolean   @default(false) @map("is_deleted")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   student    Student @relation(fields: [studentId], references: [id])
   approvedByUser User? @relation("ApprovedBy", fields: [approvedBy], references: [id])
@@ -209,34 +279,42 @@ model Visitor {
 }
 
 model Complaint {
-  id          String   @id @default(uuid()) @db.Uuid
-  studentId   String   @map("student_id") @db.Uuid
-  category    String?  @db.VarChar(50)
-  title       String?  @db.VarChar(150)
-  description String?  @db.Text
-  priority    String?  @db.VarChar(20)
-  assignedTo  String?  @map("assigned_to") @db.Uuid
-  status      String   @default("OPEN") @db.VarChar(20)
-  createdAt   DateTime @default(now()) @map("created_at")
+  id              String    @id @default(uuid()) @db.Uuid
+  studentId       String    @map("student_id") @db.Uuid
+  roomId          String?   @map("room_id") @db.VarChar(50)
+  roomNo          String?   @map("room_no") @db.VarChar(20)
+  category        String?   @db.VarChar(50)
+  title           String?   @db.VarChar(150)
+  description     String?   @db.Text
+  priority        String?   @db.VarChar(20)
+  assignedTo      String?   @map("assigned_to") @db.Uuid
+  assignedToName  String?   @map("assigned_to_name") @db.VarChar(100)
+  resolvedDate    DateTime? @map("resolved_date") @db.Date
+  resolutionNotes String?   @map("resolution_notes") @db.Text
+  status          String    @default("OPEN") @db.VarChar(20)
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  student    Student            @relation(fields: [studentId], references: [id])
-  assignedToUser User?          @relation("AssignedTo", fields: [assignedTo], references: [id])
-  comments   ComplaintComment[]
+  student       Student            @relation(fields: [studentId], references: [id])
+  assignedToUser User?             @relation("AssignedTo", fields: [assignedTo], references: [id])
+  comments      ComplaintComment[]
 
   @@index([studentId])
   @@map("complaints")
 }
 
 model ComplaintComment {
-  id          String   @id @default(uuid()) @db.Uuid
-  complaintId String   @map("complaint_id") @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  comment     String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at")
+  id          String    @id @default(uuid()) @db.Uuid
+  complaintId String    @map("complaint_id") @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  comment     String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id])
 
+  @@index([complaintId])
   @@map("complaint_comments")
 }
 

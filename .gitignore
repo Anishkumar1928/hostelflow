@@ -57,3 +57,8 @@ docker/pgdata/
 
 # Firebase
 *-firebase-adminsdk-*.json
+.vercel
+.env
+.env.local
+.env.*.local
+apps/admin-web/.env.development

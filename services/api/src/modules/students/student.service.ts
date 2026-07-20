@@ -1,0 +1,276 @@
+import crypto from 'crypto';
+import prisma from '../../config/database';
+import bcrypt from 'bcryptjs';
+import { ApiError } from '../../utils/apiResponse';
+
+const SALT_ROUNDS = 10;
+
+function generatePassword(length = 8): string {
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({ length }, () => chars[crypto.randomInt(chars.length)]).join('');
+}
+
+const studentSelect = {
+  id: true,
+  registrationNo: true,
+  enrollmentNo: true,
+  course: true,
+  department: true,
+  year: true,
+  semester: true,
+  gender: true,
+  dob: true,
+  guardianName: true,
+  guardianPhone: true,
+  emergencyContactName: true,
+  emergencyContactPhone: true,
+  emergencyContactRelation: true,
+  address: true,
+  bloodGroup: true,
+  status: true,
+  feeStatus: true,
+  admissionDate: true,
+  createdAt: true,
+  updatedAt: true,
+  user: {
+    select: { id: true, fullName: true, email: true, phone: true, status: true, createdAt: true },
+  },
+  allocations: {
+    where: { status: 'ACTIVE' },
+    take: 1,
+    orderBy: { allocatedDate: 'desc' as const },
+    select: {
+      id: true,
+      roomId: true,
+      bedId: true,
+      status: true,
+      room: { select: { id: true, roomNumber: true, hostelId: true, hostel: { select: { id: true, hostelName: true } } } },
+      bed: { select: { id: true, bedNumber: true } },
+    },
+  },
+};
+
+function extractYear(y: string | number | undefined | null): number | null {
+  if (!y) return null;
+  if (typeof y === 'number') return y;
+  const m = String(y).match(/\d+/);
+  return m ? parseInt(m[0]) : null;
+}
+
+export const list = async (params: any) => {
+  const page = Math.max(1, parseInt(params.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(params.limit) || 10));
+  const skip = (page - 1) * limit;
+  const search = (params.search || '').trim();
+  const sortBy = params.sortBy || 'createdAt';
+  const sortOrder = params.sortOrder === 'asc' ? 'asc' : 'desc';
+
+  const where: any = {};
+  if (search) {
+    where.OR = [
+      { user: { fullName: { contains: search, mode: 'insensitive' } } },
+      { user: { email: { contains: search, mode: 'insensitive' } } },
+      { enrollmentNo: { contains: search, mode: 'insensitive' } },
+      { registrationNo: { contains: search, mode: 'insensitive' } },
+      { course: { contains: search, mode: 'insensitive' } },
+      { department: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+  if (params.gender) where.gender = params.gender;
+  if (params.department) where.department = params.department;
+  if (params.status && params.status !== 'all') where.status = params.status;
+  if (params.feeStatus) where.feeStatus = params.feeStatus;
+
+  const orderBy: any = {};
+  const sortMap: Record<string, string> = { name: 'user_fullName', createdAt: 'createdAt', enrollmentNo: 'enrollmentNo', department: 'department', course: 'course', year: 'year' };
+  if (sortMap[sortBy] === 'user_fullName') {
+    orderBy.user = { fullName: sortOrder };
+  } else {
+    orderBy[sortMap[sortBy] || 'createdAt'] = sortOrder;
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.student.findMany({ where, skip, take: limit, orderBy, select: studentSelect }),
+    prisma.student.count({ where }),
+  ]);
+
+  return { data, total };
+};
+
+export const getById = async (id: string) => {
+  return prisma.student.findUnique({ where: { id }, select: studentSelect });
+};
+
+export const getByUserId = async (userId: string) => {
+  return prisma.student.findFirst({ where: { userId }, select: studentSelect });
+};
+
+export const create = async (data: any) => {
+  const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+  if (existingUser) throw new ApiError(400, 'Email is already in use');
+
+  const role = await prisma.role.findFirst({ where: { name: 'STUDENT' } });
+  if (!role) throw new Error('STUDENT role not found');
+
+  const plainPassword = data.password || generatePassword();
+  const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+
+  const student = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        fullName: data.fullName || data.name,
+        email: data.email,
+        phone: data.phone,
+        password: hashedPassword,
+        roleId: role.id,
+        status: data.status === 'Inactive' ? false : true,
+      },
+    });
+
+    return tx.student.create({
+      data: {
+        userId: user.id,
+        registrationNo: data.registrationNo || null,
+        enrollmentNo: data.enrollmentNo || null,
+        course: data.course || null,
+        department: data.department || null,
+        year: extractYear(data.year),
+        semester: data.semester || null,
+        gender: data.gender || null,
+        dob: data.dob ? new Date(data.dob) : null,
+        guardianName: data.parentName || data.guardianName || null,
+        guardianPhone: data.parentContact || data.guardianPhone || null,
+        emergencyContactName: data.emergencyContactName || null,
+        emergencyContactPhone: data.emergencyContactPhone || null,
+        emergencyContactRelation: data.emergencyContactRelation || null,
+        address: data.address || null,
+        bloodGroup: data.bloodGroup || null,
+        status: data.status || 'Active',
+        feeStatus: data.feeStatus || 'PENDING',
+        admissionDate: data.admissionDate ? new Date(data.admissionDate) : null,
+      },
+      select: studentSelect,
+    });
+  });
+
+  return { ...student, generatedPassword: plainPassword };
+};
+
+export const update = async (id: string, data: any) => {
+  const student = await prisma.student.findUnique({ where: { id } });
+  if (!student) throw new Error('Student not found');
+
+  if (data.email) {
+    const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+    if (existingUser && existingUser.id !== student.userId) throw new ApiError(400, 'Email is already in use by another student');
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const studentData: any = {};
+    if (data.registrationNo !== undefined) studentData.registrationNo = data.registrationNo;
+    if (data.enrollmentNo !== undefined) studentData.enrollmentNo = data.enrollmentNo;
+    if (data.course !== undefined) studentData.course = data.course;
+    if (data.department !== undefined) studentData.department = data.department;
+    if (data.year !== undefined) studentData.year = extractYear(data.year);
+    if (data.semester !== undefined) studentData.semester = data.semester;
+    if (data.gender !== undefined) studentData.gender = data.gender;
+    if (data.dob !== undefined) studentData.dob = data.dob ? new Date(data.dob) : null;
+    if (data.parentName !== undefined) studentData.guardianName = data.parentName;
+    if (data.guardianName !== undefined) studentData.guardianName = data.guardianName;
+    if (data.parentContact !== undefined) studentData.guardianPhone = data.parentContact;
+    if (data.guardianPhone !== undefined) studentData.guardianPhone = data.guardianPhone;
+    if (data.emergencyContactName !== undefined) studentData.emergencyContactName = data.emergencyContactName;
+    if (data.emergencyContactPhone !== undefined) studentData.emergencyContactPhone = data.emergencyContactPhone;
+    if (data.emergencyContactRelation !== undefined) studentData.emergencyContactRelation = data.emergencyContactRelation;
+    if (data.address !== undefined) studentData.address = data.address;
+    if (data.bloodGroup !== undefined) studentData.bloodGroup = data.bloodGroup;
+    if (data.status !== undefined) studentData.status = data.status;
+    if (data.feeStatus !== undefined) studentData.feeStatus = data.feeStatus;
+    if (data.admissionDate !== undefined) studentData.admissionDate = data.admissionDate ? new Date(data.admissionDate) : null;
+
+    if (Object.keys(studentData).length > 0) {
+      await tx.student.update({ where: { id }, data: studentData });
+    }
+
+    const userData: any = {};
+    if (data.fullName) userData.fullName = data.fullName;
+    if (data.name) userData.fullName = data.name;
+    if (data.email) userData.email = data.email;
+    if (data.phone !== undefined) userData.phone = data.phone;
+    if (data.status === 'Active') userData.status = true;
+    else if (data.status === 'Inactive') userData.status = false;
+
+    if (Object.keys(userData).length > 0) {
+      await tx.user.update({ where: { id: student.userId }, data: userData });
+    }
+
+    return tx.student.findUnique({ where: { id }, select: studentSelect });
+  });
+};
+
+export const remove = async (id: string) => {
+  const student = await prisma.student.findUnique({ where: { id } });
+  if (!student) throw new Error('Student not found');
+  await prisma.user.update({ where: { id: student.userId }, data: { status: false } });
+  return { id };
+};
+
+export const getStatistics = async () => {
+  const [
+    totalStudents,
+    statusCounts,
+    genderCounts,
+    feeStatusCounts,
+  ] = await Promise.all([
+    prisma.student.count(),
+    prisma.student.groupBy({ by: ['status'], _count: { status: true } }),
+    prisma.student.groupBy({ by: ['gender'], _count: { gender: true } }),
+    prisma.student.groupBy({ by: ['feeStatus'], _count: { feeStatus: true } }),
+  ]);
+
+  const active = statusCounts.find(s => s.status === 'Active');
+  const inactive = statusCounts.find(s => s.status === 'Inactive');
+  const suspended = statusCounts.find(s => s.status === 'Suspended');
+  const graduated = statusCounts.find(s => s.status === 'Graduated');
+
+  const male = genderCounts.find(g => g.gender === 'Male');
+  const female = genderCounts.find(g => g.gender === 'Female');
+  const other = genderCounts.find(g => g.gender === 'Other');
+
+  const paid = feeStatusCounts.find(f => f.feeStatus === 'PAID');
+  const pending = feeStatusCounts.find(f => f.feeStatus === 'PENDING');
+  const overdue = feeStatusCounts.find(f => f.feeStatus === 'OVERDUE');
+
+  return {
+    totalStudents,
+    activeStudents: active?._count.status ?? 0,
+    inactiveStudents: inactive?._count.status ?? 0,
+    suspendedStudents: suspended?._count.status ?? 0,
+    graduatedStudents: graduated?._count.status ?? 0,
+    maleStudents: male?._count.gender ?? 0,
+    femaleStudents: female?._count.gender ?? 0,
+    otherStudents: other?._count.gender ?? 0,
+    paidFee: paid?._count.feeStatus ?? 0,
+    pendingFee: pending?._count.feeStatus ?? 0,
+    overdueFee: overdue?._count.feeStatus ?? 0,
+  };
+};
+
+export const resetPassword = async (id: string) => {
+  const student = await prisma.student.findUnique({ where: { id }, select: { id: true, userId: true, user: { select: { email: true, fullName: true } } } });
+  if (!student) throw new Error('Student not found');
+
+  const plainPassword = generatePassword();
+  const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+
+  await prisma.user.update({
+    where: { id: student.userId },
+    data: { password: hashedPassword },
+  });
+
+  return {
+    loginId: student.user.email,
+    name: student.user.fullName,
+    generatedPassword: plainPassword,
+  };
+};
