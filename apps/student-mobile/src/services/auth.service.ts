@@ -34,6 +34,7 @@ class AuthService {
       }
       return { success: false, error: res.message || 'Login failed' };
     } catch (err: any) {
+      console.warn("[Auth] Login error:", err.response?.status, err.response?.data, err.message);
       return { success: false, error: err.response?.data?.message || err.message || 'Login failed' };
     }
   }

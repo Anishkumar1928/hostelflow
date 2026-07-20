@@ -13,10 +13,12 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = async () => {
+    setError("");
     if (!email || !password) {
-      Alert.alert("Error", "Please enter email and password");
+      setError("Please enter email and password");
       return;
     }
     setLoading(true);
@@ -27,10 +29,10 @@ export default function Login() {
         authStore.setUser(result.data.user);
         navigation.replace("MainTabs");
       } else {
-        Alert.alert("Login Failed", result.error || "Something went wrong");
+        setError(result.error || "Login failed");
       }
     } catch (err: any) {
-      Alert.alert("Error", err.message || "An unexpected error occurred");
+      setError(err.message || "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -47,6 +49,8 @@ export default function Login() {
 
         <Text style={{ color: colors.onSurfaceVariant, fontSize: 12, fontWeight: "500", textTransform: "uppercase", marginBottom: 8 }}>Password</Text>
         <TextInput value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry placeholderTextColor="#9ca3af" style={{ backgroundColor: colors.surfaceContainerLowest, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 24, color: colors.onSurface, fontSize: 16 }} />
+
+        {error ? <Text style={{ color: colors.error, fontSize: 14, textAlign: "center", marginBottom: 16 }}>{error}</Text> : null}
 
         <PrimaryButton label={loading ? "Logging in..." : "Log In"} onPress={handleLogin} />
       </KeyboardAvoidingView>
