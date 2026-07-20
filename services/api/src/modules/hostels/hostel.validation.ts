@@ -25,4 +25,7 @@ export const querySchema = z.object({
   limit: z.string().optional(),
   search: z.string().optional(),
   gender: z.string().optional(),
+  type: z.string().optional(),
+  sortBy: z.string().optional(),
+  sortOrder: z.string().optional(),
 });

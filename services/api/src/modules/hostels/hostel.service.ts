@@ -10,18 +10,30 @@ const include = {
 
 export const list = async (params: any) => {
   const { page, limit, skip } = getPagination(params.page, params.limit);
+  const search = (params.search || '').trim();
+  const sortBy = params.sortBy || 'name';
+  const sortOrder = params.sortOrder === 'asc' ? 'asc' : 'desc';
   const where: Prisma.HostelWhereInput = {};
 
-  if (params.search) {
+  if (search) {
     where.OR = [
-      { hostelName: { contains: params.search, mode: 'insensitive' } },
-      { hostelType: { contains: params.search, mode: 'insensitive' } },
+      { hostelName: { contains: search, mode: 'insensitive' } },
+      { hostelType: { contains: search, mode: 'insensitive' } },
     ];
   }
   if (params.gender) where.gender = params.gender;
+  if (params.type) where.hostelType = params.type;
+
+  const orderBy: any = {};
+  const sortMap: Record<string, string> = { name: 'hostelName', capacity: 'capacity' };
+  if (sortMap[sortBy]) {
+    orderBy[sortMap[sortBy]] = sortOrder;
+  } else {
+    orderBy.hostelName = 'asc';
+  }
 
   const [data, total] = await Promise.all([
-    prisma.hostel.findMany({ where, skip, take: limit, include, orderBy: { hostelName: 'asc' } }),
+    prisma.hostel.findMany({ where, skip, take: limit, include, orderBy }),
     prisma.hostel.count({ where }),
   ]);
   return { data, total };
