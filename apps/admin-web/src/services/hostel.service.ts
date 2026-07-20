@@ -195,6 +195,20 @@ class HostelService extends BaseService<Hostel> {
   }
 
   async createHostel(data: Omit<Hostel, 'id' | 'occupied' | 'isDeleted' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<Hostel>> {
+    try {
+      const apiPayload: Record<string, any> = {
+        hostelName: data.name,
+        hostelType: data.type,
+        gender: data.gender,
+        capacity: data.capacity,
+        floors: data.floors,
+        address: data.address,
+      };
+      const res = await (await import('../api/client')).api.post<Hostel>(`/${this.resource}`, apiPayload);
+      if (res.success && res.data) {
+        return { success: true, data: mapApiHostel(res.data) };
+      }
+    } catch {}
     const now = new Date().toISOString();
     const newHostel = {
       ...data,
@@ -207,7 +221,7 @@ class HostelService extends BaseService<Hostel> {
     const all = this.getAllFromStorage();
     all.push(newHostel);
     this.saveToStorage(all);
-    return mockApiCall(newHostel);
+    return (await import('../api/client')).mockApiCall(newHostel);
   }
 
   async updateHostel(id: string, data: Partial<Omit<Hostel, 'id'>>): Promise<ApiResponse<Hostel>> {
