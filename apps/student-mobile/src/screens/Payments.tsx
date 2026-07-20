@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TopAppBar, Card, Badge, SectionLabel } from "../components/UI";
@@ -150,20 +150,7 @@ export default function Payments() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
       <TopAppBar name={p.studentName.split(" ")[0]} />
-      <ScrollView style={{ paddingHorizontal: 16, paddingTop: 20 }} contentContainerStyle={{ paddingBottom: 24 }}>
-        <View style={{ backgroundColor: colors.primaryContainer, borderRadius: 12, padding: 24, marginBottom: 24 }}>
-          <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 12, marginBottom: 4 }}>Total Outstanding Balance</Text>
-          <Text style={{ color: "#fff", fontSize: 36, fontWeight: "700" }}>${p.outstandingBalance.toFixed(2)}</Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 8 }}>
-            <MaterialIcons name="info" size={14} color="rgba(255,255,255,0.8)" />
-            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginLeft: 4 }}>Due by {p.dueDate}</Text>
-          </View>
-          <Pressable style={({ pressed }) => ({ backgroundColor: "#fff", alignSelf: "flex-start", marginTop: 16, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 9999, flexDirection: "row", alignItems: "center", gap: 8, opacity: pressed ? 0.9 : 1 })}>
-            <Text style={{ color: colors.primary, fontWeight: "600" }}>Pay Now</Text>
-            <MaterialIcons name="arrow-forward" size={18} color="#004ac6" />
-          </Pressable>
-        </View>
-
+      <ScrollView style={{ paddingHorizontal: 16, paddingTop: 8 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <Text style={{ color: colors.onSurface, fontSize: 18, fontWeight: "600" }}>Invoice Details</Text>
           {p.outstandingBalance > 0 && <Badge label="Overdue" tone="error" />}
