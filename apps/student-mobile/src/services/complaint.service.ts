@@ -31,6 +31,7 @@ export interface CreateComplaintPayload {
   roomNo?: string;
   priority: string;
   studentName?: string;
+  photoUrl?: string;
 }
 
 class ComplaintService {
