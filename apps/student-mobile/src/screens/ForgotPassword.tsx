@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { View, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton, StubHeader } from "../components/UI";
-import { colors } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 export default function ForgotPassword() {
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
 
