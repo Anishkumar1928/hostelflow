@@ -3,9 +3,10 @@ import { View, Text, Pressable, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, Card } from "../components/UI";
-import { colors, spacing } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 export default function SettingsScreen() {
+  const { colors } = useTheme();
   const handleClearData = () => {
     Alert.alert(
       "Clear Local Data",

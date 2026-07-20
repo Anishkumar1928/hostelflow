@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { colors } from "./src/theme/tokens";
+import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
 
 import Login from "./src/screens/Login";
 import Register from "./src/screens/Register";
@@ -19,11 +19,14 @@ import Complaint from "./src/screens/Complaint";
 import ComplaintStatus from "./src/screens/ComplaintStatus";
 import Documents from "./src/screens/Documents";
 import EditProfile from "./src/screens/EditProfile";
+import HelpSupport from "./src/screens/HelpSupport";
 import HostelApplication from "./src/screens/HostelApplication";
+import LanguageSettings from "./src/screens/LanguageSettings";
 import LeaveRequest from "./src/screens/LeaveRequest";
 import LeaveStatus from "./src/screens/LeaveStatus";
 import MessMenu from "./src/screens/MessMenu";
 import Notifications from "./src/screens/Notifications";
+import Security from "./src/screens/Security";
 import Settings from "./src/screens/Settings";
 import VisitorRequest from "./src/screens/VisitorRequest";
 
@@ -33,6 +36,7 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -51,12 +55,12 @@ function MainTabs() {
   );
 }
 
-export default function App() {
+function AppContent() {
+  const { isDark } = useTheme();
   const initialRoute = authStore.isAuthenticated() ? "MainTabs" : "Login";
-
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
           <Stack.Screen name="Login" component={Login} />
@@ -68,15 +72,28 @@ export default function App() {
           <Stack.Screen name="ComplaintStatus" component={ComplaintStatus} />
           <Stack.Screen name="Documents" component={Documents} />
           <Stack.Screen name="EditProfile" component={EditProfile} />
+          <Stack.Screen name="HelpSupport" component={HelpSupport} />
           <Stack.Screen name="HostelApplication" component={HostelApplication} />
+          <Stack.Screen name="LanguageSettings" component={LanguageSettings} />
           <Stack.Screen name="LeaveRequest" component={LeaveRequest} />
           <Stack.Screen name="LeaveStatus" component={LeaveStatus} />
           <Stack.Screen name="MessMenu" component={MessMenu} />
           <Stack.Screen name="Notifications" component={Notifications} />
+          <Stack.Screen name="Security" component={Security} />
           <Stack.Screen name="Settings" component={Settings} />
           <Stack.Screen name="VisitorRequest" component={VisitorRequest} />
         </Stack.Navigator>
       </NavigationContainer>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

@@ -3,11 +3,11 @@ import { View, Text, TextInput, KeyboardAvoidingView, Platform, Alert } from "re
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "../components/UI";
-import { colors } from "../theme/tokens";
-import { authService } from "../services/auth.service";
+import { useTheme } from "../theme/ThemeContext";
 import { authStore } from "../services/authStore";
 
 export default function Login() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

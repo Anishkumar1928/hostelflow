@@ -3,9 +3,10 @@ import { View, Text, TextInput, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, PrimaryButton } from "../components/UI";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 export default function VisitorRequest() {
+  const { colors } = useTheme();
   const [visitorName, setVisitorName] = useState("");
   const [phone, setPhone] = useState("");
   const [purpose, setPurpose] = useState("");

@@ -6,9 +6,10 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, PrimaryButton } from "../components/UI";
 import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 export default function EditProfile() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

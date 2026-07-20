@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TopAppBar, Card, SectionLabel } from "../components/UI";
-import { colors } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import { authStore } from "../services/authStore";
 import { studentService } from "../services/student.service";
 import { roomService } from "../services/room.service";
@@ -19,6 +19,7 @@ interface DashboardState {
 }
 
 export default function Dashboard() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [data, setData] = useState<DashboardState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,9 +123,9 @@ export default function Dashboard() {
 
         <SectionLabel>Quick Actions</SectionLabel>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
-          <QuickAction icon="how-to-reg" label="Mark Attendance" onPress={() => navigation.navigate("Attendance")} />
-          <QuickAction icon="report-problem" label="Raise Complaint" onPress={() => navigation.navigate("Complaint")} />
-          <QuickAction icon="exit-to-app" label="Leave Request" onPress={() => navigation.navigate("LeaveRequest")} />
+          <QuickAction icon="how-to-reg" label="Mark Attendance" colors={colors} onPress={() => navigation.navigate("Attendance")} />
+          <QuickAction icon="report-problem" label="Raise Complaint" colors={colors} onPress={() => navigation.navigate("Complaint")} />
+          <QuickAction icon="exit-to-app" label="Leave Request" colors={colors} onPress={() => navigation.navigate("LeaveRequest")} />
         </ScrollView>
 
         <View style={{ backgroundColor: colors.secondaryContainer, borderRadius: 16, padding: 20, marginBottom: 24 }}>
@@ -173,10 +174,10 @@ export default function Dashboard() {
   );
 }
 
-function QuickAction({ icon, label, onPress }: { icon: keyof typeof MaterialIcons.glyphMap; label: string; onPress?: () => void }) {
+function QuickAction({ icon, label, onPress, colors }: { icon: keyof typeof MaterialIcons.glyphMap; label: string; onPress?: () => void; colors: any }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.surfaceContainer, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, marginRight: 12, opacity: pressed ? 0.8 : 1 })}>
-      <MaterialIcons name={icon} size={20} color="#004ac6" />
+      <MaterialIcons name={icon} size={20} color={colors.primary} />
       <Text style={{ color: colors.onSurface, fontWeight: "500", marginLeft: 8 }}>{label}</Text>
     </Pressable>
   );

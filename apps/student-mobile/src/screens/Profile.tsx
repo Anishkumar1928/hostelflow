@@ -4,16 +4,16 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TopAppBar, Card } from "../components/UI";
-import { colors } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
 
 export default function Profile() {
+  const { colors, isDark, toggleTheme } = useTheme();
   const navigation = useNavigation<any>();
   const user = authStore.getUser();
   const [student, setStudent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -80,7 +80,7 @@ export default function Profile() {
                 <View style={{ marginLeft: roomNo ? 24 : 0 }}><Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 10, textTransform: "uppercase" }}>Valid Until</Text><Text style={{ color: "#fff", fontSize: 14, marginTop: 4 }}>{s?.semester || "Current"}</Text></View>
               </View>
             </View>
-            <View style={{ backgroundColor: "#fff", padding: 8, borderRadius: 8 }}><MaterialIcons name="qr-code-2" size={48} color="#004ac6" /></View>
+            <View style={{ backgroundColor: "#fff", padding: 8, borderRadius: 8 }}><MaterialIcons name="qr-code-2" size={48} color={colors.primary} /></View>
           </View>
         </View>
 
@@ -89,22 +89,23 @@ export default function Profile() {
           <Pressable onPress={() => navigation.navigate("EditProfile")}><Text style={{ color: colors.primary, fontWeight: "500", fontSize: 14 }}>Edit</Text></Pressable>
         </View>
         <Card style={{ marginBottom: 24, padding: 0, overflow: "hidden" }}>
-          {phone ? <InfoRow icon="call" label="Phone Number" value={phone} /> : null}
-          {email ? <InfoRow icon="mail" label="Email Address" value={email} /> : null}
-          {guardian ? <InfoRow icon="family-restroom" label="Guardian Contact" value={guardian} last /> : null}
+          {phone ? <InfoRow icon="call" label="Phone Number" value={phone} colors={colors} /> : null}
+          {email ? <InfoRow icon="mail" label="Email Address" value={email} colors={colors} /> : null}
+          {guardian ? <InfoRow icon="family-restroom" label="Guardian Contact" value={guardian} colors={colors} last /> : null}
         </Card>
 
         <Text style={{ color: colors.onBackground, fontSize: 18, fontWeight: "600", marginBottom: 12 }}>App Settings</Text>
         <Card style={{ marginBottom: 24, padding: 0, overflow: "hidden" }}>
-          <SettingRow icon="notifications-active" label="Notifications" onPress={() => navigation.navigate("Notifications")} />
-          <SettingRow icon="lock" label="Security & Password" onPress={() => navigation.navigate("Settings")} />
+          <SettingRow icon="notifications-active" label="Notifications" colors={colors} onPress={() => navigation.navigate("Notifications")} />
+          <SettingRow icon="lock" label="Security & Password" colors={colors} onPress={() => navigation.navigate("Security")} />
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottomWidth: 1, borderBottomColor: colors.outlineVariant }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}><MaterialIcons name="contrast" size={22} color="#434655" /><Text style={{ color: colors.onSurface, fontWeight: "500", marginLeft: 16 }}>Dark Mode</Text></View>
-            <Switch value={darkMode} onValueChange={setDarkMode} trackColor={{ true: "#004ac6" }} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}><MaterialIcons name={isDark ? "dark-mode" : "light-mode"} size={22} color={colors.onSurfaceVariant} /><Text style={{ color: colors.onSurface, fontWeight: "500", marginLeft: 16 }}>Dark Mode</Text></View>
+            <Switch value={isDark} onValueChange={toggleTheme} trackColor={{ true: colors.primary, false: colors.outlineVariant }} />
           </View>
-          <SettingRow icon="help" label="Help & Support" onPress={() => navigation.navigate("Settings")} />
-          <Pressable onPress={handleLogout} style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: 16, padding: 16, backgroundColor: pressed ? "rgba(255,218,214,0.1)" : "transparent" })}>
-            <MaterialIcons name="logout" size={22} color="#ba1a1a" />
+          <SettingRow icon="help" label="Help & Support" colors={colors} onPress={() => navigation.navigate("HelpSupport")} />
+          <SettingRow icon="settings" label="Settings" colors={colors} onPress={() => navigation.navigate("Settings")} />
+          <Pressable onPress={handleLogout} style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: 16, padding: 16, backgroundColor: pressed ? colors.errorContainer : "transparent" })}>
+            <MaterialIcons name="logout" size={22} color={colors.error} />
             <Text style={{ color: colors.error, fontWeight: "500", marginLeft: 16 }}>Log Out</Text>
           </Pressable>
         </Card>
@@ -114,20 +115,20 @@ export default function Profile() {
   );
 }
 
-function InfoRow({ icon, label, value, last }: { icon: keyof typeof MaterialIcons.glyphMap; label: string; value: string; last?: boolean }) {
+function InfoRow({ icon, label, value, colors, last }: any) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 16, padding: 16, borderBottomWidth: last ? 0 : 1, borderBottomColor: colors.outlineVariant }}>
-      <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: colors.surfaceContainerHigh, alignItems: "center", justifyContent: "center" }}><MaterialIcons name={icon} size={20} color="#004ac6" /></View>
+      <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: colors.surfaceContainerHigh, alignItems: "center", justifyContent: "center" }}><MaterialIcons name={icon} size={20} color={colors.primary} /></View>
       <View style={{ marginLeft: 16, flex: 1 }}><Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>{label}</Text><Text style={{ color: colors.onSurface, fontSize: 16, marginTop: 2 }}>{value}</Text></View>
     </View>
   );
 }
 
-function SettingRow({ icon, label, onPress }: { icon: keyof typeof MaterialIcons.glyphMap; label: string; onPress?: () => void }) {
+function SettingRow({ icon, label, colors, onPress }: any) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottomWidth: 1, borderBottomColor: colors.outlineVariant, backgroundColor: pressed ? colors.surfaceContainerLow : "transparent" })}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}><MaterialIcons name={icon} size={22} color="#434655" /><Text style={{ color: colors.onSurface, fontWeight: "500", marginLeft: 16 }}>{label}</Text></View>
-      <MaterialIcons name="chevron-right" size={20} color="#737686" />
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}><MaterialIcons name={icon} size={22} color={colors.onSurfaceVariant} /><Text style={{ color: colors.onSurface, fontWeight: "500", marginLeft: 16 }}>{label}</Text></View>
+      <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
     </Pressable>
   );
 }

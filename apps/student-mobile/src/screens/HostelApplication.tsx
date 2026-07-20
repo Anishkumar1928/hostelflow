@@ -6,7 +6,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, Card, Badge, PrimaryButton } from "../components/UI";
 import { applicationService } from "../services/application.service";
 import { authStore } from "../services/authStore";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 const ROOM_TYPES = ["Single", "Double", "Triple", "Dormitory"];
 
@@ -19,6 +19,7 @@ const STATUS_TONE: Record<string, "warning" | "success" | "error" | "neutral"> =
 };
 
 export default function HostelApplication() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

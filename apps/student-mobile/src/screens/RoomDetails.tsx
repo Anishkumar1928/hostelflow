@@ -3,7 +3,7 @@ import { View, Text, ScrollView, ImageBackground, Pressable, ActivityIndicator }
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TopAppBar, Card, Badge } from "../components/UI";
-import { colors } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import { authStore } from "../services/authStore";
 import { studentService } from "../services/student.service";
 import { roomService } from "../services/room.service";
@@ -22,6 +22,7 @@ interface RoomDetailsState {
 }
 
 export default function RoomDetails() {
+  const { colors } = useTheme();
   const [data, setData] = useState<RoomDetailsState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

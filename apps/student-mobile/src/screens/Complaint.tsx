@@ -7,12 +7,13 @@ import { StubHeader, PrimaryButton } from "../components/UI";
 import { complaintService } from "../services/complaint.service";
 import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 const CATEGORIES = ["Maintenance", "Cleaning", "Noise", "Electricity", "Plumbing", "Security", "Other"];
 const PRIORITIES = ["Low", "Medium", "High", "Critical"];
 
 export default function Complaint() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [title, setTitle] = useState("");

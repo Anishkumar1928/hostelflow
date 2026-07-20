@@ -3,9 +3,10 @@ import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader } from "../components/UI";
-import { colors, spacing } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 export default function Documents() {
+  const { colors } = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
       <StubHeader title="Documents" />

@@ -6,7 +6,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader, Card, Badge, PrimaryButton } from "../components/UI";
 import { leaveService } from "../services/leave.service";
 import { authStore } from "../services/authStore";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 const STATUS_TONE: Record<string, "warning" | "success" | "error" | "neutral"> = {
   Pending: "warning",
@@ -16,6 +16,7 @@ const STATUS_TONE: Record<string, "warning" | "success" | "error" | "neutral"> =
 };
 
 export default function LeaveStatus() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [leaves, setLeaves] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

@@ -8,7 +8,7 @@ import { StubHeader, PrimaryButton } from "../components/UI";
 import { leaveService } from "../services/leave.service";
 import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 const LEAVE_TYPES = ["Medical", "Personal", "Family", "Emergency", "Other"];
 
@@ -20,6 +20,7 @@ function fmt(d: Date): string {
 }
 
 export default function LeaveRequest() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [leaveType, setLeaveType] = useState("Personal");
   const [fromDate, setFromDate] = useState(new Date());

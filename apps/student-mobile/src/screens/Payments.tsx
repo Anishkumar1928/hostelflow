@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TopAppBar, Card, Badge, SectionLabel } from "../components/UI";
-import { colors } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import { authStore } from "../services/authStore";
 import { studentService } from "../services/student.service";
 import { paymentService, type Payment, type Invoice, type PaymentHistoryEntry } from "../services/payment.service";
@@ -18,6 +18,7 @@ interface PaymentsState {
 }
 
 export default function Payments() {
+  const { colors } = useTheme();
   const [data, setData] = useState<PaymentsState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

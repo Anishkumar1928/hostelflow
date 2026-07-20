@@ -7,7 +7,7 @@ import { StubHeader, Card, Badge, PrimaryButton } from "../components/UI";
 import { complaintService } from "../services/complaint.service";
 import { studentService } from "../services/student.service";
 import { authStore } from "../services/authStore";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 const STATUS_TONE: Record<string, "warning" | "success" | "error" | "neutral"> = {
   Open: "warning",
@@ -25,6 +25,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export default function ComplaintStatus() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [complaints, setComplaints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

@@ -6,9 +6,10 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { StubHeader } from "../components/UI";
 import { notificationService } from "../services/notification.service";
 import { authStore } from "../services/authStore";
-import { colors, spacing, radius } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 export default function Notifications() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
