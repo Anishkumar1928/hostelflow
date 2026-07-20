@@ -189,6 +189,20 @@ class BuildingService extends BaseService<Building> {
   }
 
   async createBuilding(data: Omit<Building, 'id' | 'occupiedRooms' | 'availableRooms' | 'isDeleted' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<Building>> {
+    try {
+      const apiPayload: Record<string, any> = {};
+      if (data.name) apiPayload.name = data.name;
+      if (data.code) apiPayload.code = data.code;
+      if (data.description !== undefined) apiPayload.description = data.description;
+      if (data.gender) apiPayload.gender = data.gender;
+      if (data.floors) apiPayload.floors = data.floors;
+      if (data.capacity) apiPayload.capacity = data.capacity;
+      if (data.status) apiPayload.status = data.status;
+      const res = await (await import('../api/client')).api.post<Building>(`/${this.resource}`, apiPayload);
+      if (res.success && res.data) {
+        return { success: true, data: mapApiBuilding(res.data) };
+      }
+    } catch {}
     const now = new Date().toISOString();
     const newItem = {
       ...data,
@@ -206,6 +220,20 @@ class BuildingService extends BaseService<Building> {
   }
 
   async updateBuilding(id: string, data: Partial<Omit<Building, 'id'>>): Promise<ApiResponse<Building>> {
+    try {
+      const apiPayload: Record<string, any> = {};
+      if (data.name) apiPayload.name = data.name;
+      if (data.code) apiPayload.code = data.code;
+      if (data.description !== undefined) apiPayload.description = data.description;
+      if (data.gender) apiPayload.gender = data.gender;
+      if (data.floors) apiPayload.floors = data.floors;
+      if (data.capacity) apiPayload.capacity = data.capacity;
+      if (data.status) apiPayload.status = data.status;
+      const res = await (await import('../api/client')).api.patch<Building>(`/${this.resource}/${id}`, apiPayload);
+      if (res.success && res.data) {
+        return { success: true, data: mapApiBuilding(res.data) };
+      }
+    } catch {}
     const all = this.getAllFromStorage();
     const idx = all.findIndex(b => b.id === id);
     if (idx === -1) return { success: false, error: 'Building not found' };
@@ -220,6 +248,13 @@ class BuildingService extends BaseService<Building> {
     if (activeRes.success && activeRes.data) {
       return { success: false, error: 'Cannot delete building with active rooms. Please vacate all rooms first.' };
     }
+    try {
+      const res = await (await import('../api/client')).api.delete<void>(`/${this.resource}/${id}`);
+      if (res.success) return { success: true };
+      if (res.error && !res.error.toLowerCase().includes('not found')) {
+        return res;
+      }
+    } catch {}
     const all = this.getAllFromStorage();
     const idx = all.findIndex(b => b.id === id);
     if (idx === -1) return { success: false, error: 'Building not found' };

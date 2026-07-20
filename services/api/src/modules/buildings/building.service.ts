@@ -11,20 +11,31 @@ const include = {
 
 export const list = async (params: any) => {
   const { page, limit, skip } = getPagination(params.page, params.limit);
+  const search = (params.search || '').trim();
+  const sortBy = params.sortBy || 'name';
+  const sortOrder = params.sortOrder === 'asc' ? 'asc' : 'desc';
   const where: Prisma.BuildingWhereInput = {};
 
-  if (params.search) {
+  if (search) {
     where.OR = [
-      { name: { contains: params.search, mode: 'insensitive' } },
-      { code: { contains: params.search, mode: 'insensitive' } },
+      { name: { contains: search, mode: 'insensitive' } },
+      { code: { contains: search, mode: 'insensitive' } },
     ];
   }
   if (params.hostelId) where.hostelId = params.hostelId;
   if (params.gender) where.gender = params.gender;
   if (params.status) where.status = params.status;
 
+  const orderBy: any = {};
+  const sortMap: Record<string, string> = { name: 'name', capacity: 'capacity', createdAt: 'createdAt' };
+  if (sortMap[sortBy]) {
+    orderBy[sortMap[sortBy]] = sortOrder;
+  } else {
+    orderBy.name = 'asc';
+  }
+
   const [data, total] = await Promise.all([
-    prisma.building.findMany({ where, skip, take: limit, include, orderBy: { name: 'asc' } }),
+    prisma.building.findMany({ where, skip, take: limit, include, orderBy }),
     prisma.building.count({ where }),
   ]);
   return { data, total };
