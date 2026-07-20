@@ -15,10 +15,14 @@ import RoomDetails from "./src/screens/RoomDetails";
 import Payments from "./src/screens/Payments";
 import Profile from "./src/screens/Profile";
 import Attendance from "./src/screens/Attendance";
+import ChangePassword from "./src/screens/ChangePassword";
+import ChangePIN from "./src/screens/ChangePIN";
 import Complaint from "./src/screens/Complaint";
 import ComplaintStatus from "./src/screens/ComplaintStatus";
+import ContactSupport from "./src/screens/ContactSupport";
 import Documents from "./src/screens/Documents";
 import EditProfile from "./src/screens/EditProfile";
+import FAQ from "./src/screens/FAQ";
 import HelpSupport from "./src/screens/HelpSupport";
 import HostelApplication from "./src/screens/HostelApplication";
 import LanguageSettings from "./src/screens/LanguageSettings";
@@ -26,8 +30,11 @@ import LeaveRequest from "./src/screens/LeaveRequest";
 import LeaveStatus from "./src/screens/LeaveStatus";
 import MessMenu from "./src/screens/MessMenu";
 import Notifications from "./src/screens/Notifications";
+import PrivacyPolicy from "./src/screens/PrivacyPolicy";
+import ReportProblem from "./src/screens/ReportProblem";
 import Security from "./src/screens/Security";
 import Settings from "./src/screens/Settings";
+import TermsConditions from "./src/screens/TermsConditions";
 import VisitorRequest from "./src/screens/VisitorRequest";
 
 import { authStore } from "./src/services/authStore";
@@ -68,10 +75,14 @@ function AppContent() {
           <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Attendance" component={Attendance} />
+          <Stack.Screen name="ChangePassword" component={ChangePassword} />
+          <Stack.Screen name="ChangePIN" component={ChangePIN} />
           <Stack.Screen name="Complaint" component={Complaint} />
           <Stack.Screen name="ComplaintStatus" component={ComplaintStatus} />
+          <Stack.Screen name="ContactSupport" component={ContactSupport} />
           <Stack.Screen name="Documents" component={Documents} />
           <Stack.Screen name="EditProfile" component={EditProfile} />
+          <Stack.Screen name="FAQ" component={FAQ} />
           <Stack.Screen name="HelpSupport" component={HelpSupport} />
           <Stack.Screen name="HostelApplication" component={HostelApplication} />
           <Stack.Screen name="LanguageSettings" component={LanguageSettings} />
@@ -79,8 +90,11 @@ function AppContent() {
           <Stack.Screen name="LeaveStatus" component={LeaveStatus} />
           <Stack.Screen name="MessMenu" component={MessMenu} />
           <Stack.Screen name="Notifications" component={Notifications} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
+          <Stack.Screen name="ReportProblem" component={ReportProblem} />
           <Stack.Screen name="Security" component={Security} />
           <Stack.Screen name="Settings" component={Settings} />
+          <Stack.Screen name="TermsConditions" component={TermsConditions} />
           <Stack.Screen name="VisitorRequest" component={VisitorRequest} />
         </Stack.Navigator>
       </NavigationContainer>
