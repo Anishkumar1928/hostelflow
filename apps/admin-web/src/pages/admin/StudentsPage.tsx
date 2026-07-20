@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { studentService } from '../../services/student.service';
 import type { Student } from '../../types';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { Select } from '../../components/ui/Select';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LoadingSkeleton } from '../../components/ui/LoadingSkeleton';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
@@ -145,14 +146,17 @@ export function StudentsPage() {
         </select>
         <div className="flex items-center gap-1 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
           <SlidersHorizontal className="w-4 h-4 text-slate-400" />
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-            className="text-sm bg-transparent text-slate-900 dark:text-white border-none focus:outline-none">
-            <option value="name">Name</option>
-            <option value="enrollmentNo">Enrollment</option>
-            <option value="department">Department</option>
-            <option value="course">Course</option>
-            <option value="year">Year</option>
-          </select>
+          <Select
+            value={sortBy}
+            onChange={setSortBy}
+            options={[
+              { value: 'name', label: 'Name' },
+              { value: 'enrollmentNo', label: 'Enrollment' },
+              { value: 'department', label: 'Department' },
+              { value: 'course', label: 'Course' },
+              { value: 'year', label: 'Year' },
+            ]}
+          />
           <button onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}
             className="text-xs text-slate-500 hover:text-brand-500 transition-colors">
             {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
