@@ -62,7 +62,7 @@ export function BuildingDetailsCard({ building }: BuildingDetailsCardProps) {
             </div>
             <div className="flex items-center gap-3 text-sm">
               <User className="w-4 h-4 text-slate-400" />
-              <div><p className="text-slate-900 dark:text-white">Warden (ID: {building.wardenId})</p><p className="text-xs text-slate-500">Assigned Warden</p></div>
+              <div><p className="text-slate-900 dark:text-white">{building.wardenName || 'Not assigned'}</p><p className="text-xs text-slate-500">Assigned Warden</p></div>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <Layers className="w-4 h-4 text-slate-400" />

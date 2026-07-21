@@ -32,6 +32,7 @@ export interface Building {
   availableRooms: number;
   status: 'Active' | 'Maintenance';
   wardenId: string;
+  wardenName?: string;
   isDeleted?: boolean;
   createdAt: string;
   updatedAt: string;

@@ -30,6 +30,12 @@ export function BuildingDetailsPage() {
     });
   }, [id, navigate]);
 
+  useEffect(() => {
+    if (building) {
+      navigate(`/admin/buildings/${id}`, { replace: true, state: { name: building.name } });
+    }
+  }, [building, id, navigate]);
+
   const handleDelete = async () => {
     if (!building) return;
     setDeleting(true);

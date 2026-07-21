@@ -31,6 +31,7 @@ function mapApiBuilding(b: any): Building {
     availableRooms: b.availableRooms ?? 0,
     status: b.status || 'Active',
     wardenId: b.wardenId || '',
+    wardenName: b.warden?.fullName || '',
     isDeleted: b.isDeleted || false,
     createdAt: b.createdAt || new Date().toISOString(),
     updatedAt: b.updatedAt || new Date().toISOString(),
