@@ -16,10 +16,11 @@ interface BuildingStats {
 }
 
 function mapApiBuilding(b: any): Building {
-  if (!b || b.name !== undefined) return b;
+  if (!b) return b;
   return {
     id: b.id,
     hostelId: b.hostelId || '',
+    hostelName: b.hostel?.hostelName || '',
     name: b.name || '',
     code: b.code || '',
     description: b.description || '',
@@ -152,10 +153,54 @@ class BuildingService extends BaseService<Building> {
   }
 
   async getHostels(): Promise<ApiResponse<Hostel[]>> {
+    try {
+      const res = await (await import('../api/client')).api.get<Hostel[]>('/hostels');
+      if (res.success && res.data) {
+        const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data ?? [];
+        return { success: true, data: data.map((h: any) => ({
+          id: h.id,
+          name: h.hostelName || h.name || '',
+          type: h.hostelType || h.type || '',
+          gender: h.gender || '',
+          capacity: h.capacity || 0,
+          occupied: h.occupied || 0,
+          address: h.address || '',
+          wardenId: h.wardenId || '',
+          wardenName: h.warden?.fullName || h.wardenName || '',
+          status: h.status || 'Active',
+          floors: h.floors || 1,
+          buildings: h.buildings || 0,
+          facilities: h.facilities || [],
+          isDeleted: h.isDeleted || false,
+          createdAt: h.createdAt || '',
+          updatedAt: h.updatedAt || '',
+        })) };
+      }
+    } catch {}
     return mockApiCall(INITIAL_HOSTELS.filter(h => !h.isDeleted));
   }
 
   async getWardens(): Promise<ApiResponse<Staff[]>> {
+    try {
+      const res = await (await import('../api/client')).api.get<any[]>('/users');
+      if (res.success && res.data) {
+        const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data ?? [];
+        const wardens = data.filter((u: any) => {
+          const role = u.role?.name || u.role || '';
+          return role === 'WARDEN' || role === 'warden';
+        }).map((u: any) => ({
+          id: u.id,
+          name: u.fullName || u.name || '',
+          role: 'Warden',
+          phone: u.phone || '',
+          email: u.email || '',
+          department: 'Hostel Management',
+          joinDate: u.createdAt ? new Date(u.createdAt).toISOString().split('T')[0] : '',
+          status: u.status === false ? 'Inactive' : 'Active',
+        }));
+        if (wardens.length > 0) return { success: true, data: wardens };
+      }
+    } catch {}
     const staffWardens = INITIAL_STAFF.filter(s => s.role === 'Warden' || s.department === 'Hostel Management');
     const userWardens = MOCK_USERS.filter(u => u.role === 'warden').map(u => ({
       id: u.id, name: u.name, role: 'Warden', phone: u.phone, email: u.email,
@@ -229,6 +274,7 @@ class BuildingService extends BaseService<Building> {
       if (data.floors) apiPayload.floors = data.floors;
       if (data.capacity) apiPayload.capacity = data.capacity;
       if (data.status) apiPayload.status = data.status;
+      if (data.wardenId && !data.wardenId.startsWith?.('u')) apiPayload.wardenId = data.wardenId;
       const res = await (await import('../api/client')).api.patch<Building>(`/${this.resource}/${id}`, apiPayload);
       if (res.success && res.data) {
         return { success: true, data: mapApiBuilding(res.data) };

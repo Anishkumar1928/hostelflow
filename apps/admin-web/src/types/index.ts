@@ -21,6 +21,7 @@ export interface User {
 export interface Building {
   id: string;
   hostelId?: string;
+  hostelName?: string;
   name: string;
   code: string;
   description?: string;

@@ -52,35 +52,21 @@ async function main() {
   const warden = await prisma.user.findFirst({ where: { email: 'warden@hostelflow.com' } });
   const wardenId = warden?.id;
 
+  const hostelCreateData = (id: string, name: string, type: string, gender: string, capacity: number, floors: number, address: string) => ({
+    id, hostelName: name, hostelType: type, gender, capacity, floors, address, wardenId,
+  });
+
   const boysHostel = await prisma.hostel.upsert({
     where: { id: '00000000-0000-0000-0000-000000000001' },
-    update: {},
-    create: {
-      id: '00000000-0000-0000-0000-000000000001',
-      hostelName: 'Boys Hostel - A',
-      hostelType: 'Boys',
-      gender: 'Male',
-      capacity: 200,
-      floors: 4,
-      address: 'Main Campus, Block A',
-      wardenId,
-    },
+    update: { hostelName: 'Boys Hostel - A', hostelType: 'Boys', gender: 'Male', capacity: 200, floors: 4, address: 'Main Campus, Block A', wardenId },
+    create: hostelCreateData('00000000-0000-0000-0000-000000000001', 'Boys Hostel - A', 'Boys', 'Male', 200, 4, 'Main Campus, Block A'),
   });
   console.log(`  Hostel '${boysHostel.hostelName}' ready`);
 
   const girlsHostel = await prisma.hostel.upsert({
     where: { id: '00000000-0000-0000-0000-000000000002' },
-    update: {},
-    create: {
-      id: '00000000-0000-0000-0000-000000000002',
-      hostelName: 'Girls Hostel - B',
-      hostelType: 'Girls',
-      gender: 'Female',
-      capacity: 150,
-      floors: 3,
-      address: 'Main Campus, Block B',
-      wardenId,
-    },
+    update: { hostelName: 'Girls Hostel - B', hostelType: 'Girls', gender: 'Female', capacity: 150, floors: 3, address: 'Main Campus, Block B', wardenId },
+    create: hostelCreateData('00000000-0000-0000-0000-000000000002', 'Girls Hostel - B', 'Girls', 'Female', 150, 3, 'Main Campus, Block B'),
   });
   console.log(`  Hostel '${girlsHostel.hostelName}' ready`);
 
@@ -94,9 +80,10 @@ async function main() {
 
   const createdBuildings = [];
   for (const b of buildings) {
+    const { id, ...rest } = b;
     const building = await prisma.building.upsert({
-      where: { id: b.id },
-      update: {},
+      where: { id },
+      update: rest,
       create: b,
     });
     createdBuildings.push(building);

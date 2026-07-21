@@ -9,12 +9,15 @@ interface BuildingDetailsCardProps {
 }
 
 export function BuildingDetailsCard({ building }: BuildingDetailsCardProps) {
-  const [hostelName, setHostelName] = useState('');
+  const [fallbackName, setFallbackName] = useState('');
 
   useEffect(() => {
-    buildingService.getHostelName(building.hostelId).then(setHostelName);
-  }, [building.hostelId]);
+    if (!building.hostelName) {
+      buildingService.getHostelName(building.hostelId).then(setFallbackName);
+    }
+  }, [building.hostelId, building.hostelName]);
 
+  const hostelName = building.hostelName || fallbackName;
   const pct = building.capacity > 0 ? Math.round((building.occupiedRooms / building.capacity) * 100) : 0;
 
   return (

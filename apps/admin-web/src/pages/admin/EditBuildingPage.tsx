@@ -24,6 +24,12 @@ export function EditBuildingPage() {
     });
   }, [id, navigate]);
 
+  useEffect(() => {
+    if (building) {
+      navigate(`/admin/buildings/${id}/edit`, { replace: true, state: { name: building.name } });
+    }
+  }, [building, id, navigate]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">

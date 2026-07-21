@@ -19,7 +19,7 @@ export function BuildingForm({ initialData, onSuccess, onCancel }: BuildingFormP
   const [submitting, setSubmitting] = useState(false);
   const { addToast } = useNotify();
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(buildingFormSchema),
     defaultValues: initialData ? {
       name: initialData.name,
@@ -42,6 +42,19 @@ export function BuildingForm({ initialData, onSuccess, onCancel }: BuildingFormP
     buildingService.getHostels().then(res => { if (res.success && res.data) setHostels(res.data); });
     buildingService.getWardens().then(res => { if (res.success && res.data) setWardens(res.data); });
   }, []);
+
+  useEffect(() => {
+    if (initialData && hostels.length > 0 && initialData.hostelId) {
+      setValue('hostelId', initialData.hostelId, { shouldDirty: false, shouldTouch: false });
+    }
+  }, [hostels]);
+
+  useEffect(() => {
+    if (initialData && wardens.length > 0) {
+      const val = initialData.wardenId || '';
+      setValue('wardenId', val, { shouldDirty: false, shouldTouch: false, shouldValidate: false });
+    }
+  }, [wardens]);
 
   const onSubmit = async (raw: Record<string, any>) => {
     setSubmitting(true);

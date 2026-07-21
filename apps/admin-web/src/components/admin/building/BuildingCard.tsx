@@ -11,12 +11,15 @@ interface BuildingCardProps {
 }
 
 export function BuildingCard({ building, onDelete, idx = 0 }: BuildingCardProps) {
-  const [hostelName, setHostelName] = useState('');
+  const [fallbackName, setFallbackName] = useState('');
 
   useEffect(() => {
-    buildingService.getHostelName(building.hostelId).then(setHostelName);
-  }, [building.hostelId]);
+    if (!building.hostelName) {
+      buildingService.getHostelName(building.hostelId).then(setFallbackName);
+    }
+  }, [building.hostelId, building.hostelName]);
 
+  const hostelName = building.hostelName || fallbackName;
   const pct = building.capacity > 0 ? Math.round((building.occupiedRooms / building.capacity) * 100) : 0;
   const barColor = pct > 90 ? 'from-sky-500 to-blue-600' : pct > 70 ? 'from-indigo-500 to-blue-600' : 'from-blue-500 to-indigo-600';
 
