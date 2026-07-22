@@ -49,6 +49,7 @@ export function EditApplicationPage() {
           reason: a.reason || '',
           appliedDate: a.appliedDate,
         });
+        navigate(`/admin/applications/${id}/edit`, { replace: true, state: { name: a.studentName } });
         if (hostelRes.data) setHostels(hostelRes.data.filter(h => !h.isDeleted));
       } else {
         addToast('Application not found', 'error');

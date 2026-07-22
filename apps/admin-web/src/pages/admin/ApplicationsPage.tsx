@@ -189,7 +189,7 @@ export function ApplicationsPage() {
                             className="p-2 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors">
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button onClick={() => navigate(`/admin/applications/${a.id}/edit`)}
+                          <button onClick={() => navigate(`/admin/applications/${a.id}/edit`, { state: { name: a.studentName } })}
                             className="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
                             <Edit3 className="w-4 h-4" />
                           </button>
