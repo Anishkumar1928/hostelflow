@@ -11,11 +11,8 @@ function toApp(d: any): HostelApplication {
     preferredHostelId: d.preferredHostelId || d.hostelId || '',
     preferredHostel: d.preferredHostel || '',
     preferredRoomType: d.preferredRoomType || '',
-    academicYear: d.academicYear || '',
-    semester: d.semester || '',
+    semester: d.semester ? (d.semester.startsWith('Sem ') ? d.semester : `Sem ${d.semester}`) : '',
     reason: d.reason || '',
-    specialRequirements: d.specialRequirements || '',
-    medicalRequirements: d.medicalRequirements || '',
     status: d.status || 'Pending',
     appliedDate: d.appliedDate || '',
     reviewedBy: d.reviewedBy || undefined,
@@ -75,7 +72,7 @@ class ApplicationService {
 
   async createApplication(data: {
     studentId: string; preferredHostelId: string; preferredRoomType?: string; reason?: string;
-    studentName?: string; course?: string; year?: string; academicYear?: string; semester?: string;
+    studentName?: string; course?: string; year?: string; semester?: string;
     appliedDate?: string; preferredHostel?: string;
   }): Promise<ApiResponse<HostelApplication>> {
     try {

@@ -35,7 +35,6 @@ export function ApplicationsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [hostelFilter, setHostelFilter] = useState<string>('all');
-  const [yearFilter, setYearFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('appliedDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
@@ -50,7 +49,6 @@ export function ApplicationsPage() {
     const filters: Record<string, string> = {};
     if (statusFilter !== 'all') filters.status = statusFilter;
     if (hostelFilter !== 'all') filters.hostelId = hostelFilter;
-    if (yearFilter !== 'all') filters.academicYear = yearFilter;
     const res = await applicationService.getPaginated(page, limit, search || undefined, filters, sortBy, sortOrder);
     if (res.success && res.data) {
       setApps(res.data.data.filter((a: HostelApplication) => !a.isDeleted));
@@ -58,7 +56,7 @@ export function ApplicationsPage() {
       setTotal(res.data.total);
     }
     setLoading(false);
-  }, [page, search, statusFilter, hostelFilter, yearFilter, sortBy, sortOrder]);
+  }, [page, search, statusFilter, hostelFilter, sortBy, sortOrder]);
 
   useEffect(() => { fetchApps(); }, [fetchApps]);
 
@@ -112,12 +110,7 @@ export function ApplicationsPage() {
           <option value="Waitlisted">Waitlisted</option>
           <option value="Cancelled">Cancelled</option>
         </select>
-        <select value={yearFilter} onChange={e => { setYearFilter(e.target.value); setPage(1); }}
-          className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white">
-          <option value="all">All Years</option>
-          <option value="2024-25">2024-25</option>
-          <option value="2025-26">2025-26</option>
-        </select>
+
         <div className="flex items-center gap-1 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
           <SlidersHorizontal className="w-4 h-4 text-slate-400" />
           <Select

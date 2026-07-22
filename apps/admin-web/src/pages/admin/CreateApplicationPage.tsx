@@ -16,11 +16,8 @@ const applicationSchema = z.object({
   studentId: z.string().min(1, 'Student is required'),
   preferredHostelId: z.string().min(1, 'Preferred hostel is required'),
   preferredRoomType: z.string().min(1, 'Room type is required'),
-  academicYear: z.string().min(1, 'Academic year is required'),
   semester: z.string().min(1, 'Semester is required'),
   reason: z.string().optional(),
-  specialRequirements: z.string().optional(),
-  medicalRequirements: z.string().optional(),
   appliedDate: z.string().min(1, 'Applied date is required'),
 });
 
@@ -164,15 +161,6 @@ export function CreateApplicationPage() {
               {errors.preferredRoomType && <p className={errorClass}>{errors.preferredRoomType.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className={labelClass}>Academic Year *</label>
-              <select {...register('academicYear')} className={inputClass}>
-                <option value="">Select year</option>
-                <option value="2024-25">2024-25</option>
-                <option value="2025-26">2025-26</option>
-              </select>
-              {errors.academicYear && <p className={errorClass}>{errors.academicYear.message}</p>}
-            </div>
-            <div className="space-y-1.5">
               <label className={labelClass}>Semester *</label>
               <select {...register('semester')} className={inputClass}>
                 <option value="">Select semester</option>
@@ -197,16 +185,6 @@ export function CreateApplicationPage() {
           <div className="space-y-1.5">
             <label className={labelClass}>Reason for Application</label>
             <textarea {...register('reason')} rows={2} placeholder="Why does the student need hostel accommodation?" className={inputClass} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1.5">
-              <label className={labelClass}>Special Requirements</label>
-              <textarea {...register('specialRequirements')} rows={2} placeholder="Any special accommodation needs" className={inputClass} />
-            </div>
-            <div className="space-y-1.5">
-              <label className={labelClass}>Medical Requirements</label>
-              <textarea {...register('medicalRequirements')} rows={2} placeholder="Any medical conditions or needs" className={inputClass} />
-            </div>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">

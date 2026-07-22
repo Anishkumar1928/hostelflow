@@ -253,7 +253,6 @@ export function ApplicationDetailsPage() {
             <div className="space-y-0">
               {infoRow('Preferred Hostel', hostelName)}
               {infoRow('Preferred Room Type', app.preferredRoomType)}
-              {infoRow('Academic Year', app.academicYear)}
               {infoRow('Semester', app.semester)}
               {infoRow('Applied Date', app.appliedDate ? formatDate(app.appliedDate) : undefined)}
               <div className="flex items-center justify-between py-2.5 border-b border-slate-100 dark:border-slate-800">
@@ -262,28 +261,12 @@ export function ApplicationDetailsPage() {
               </div>
             </div>
           </div>
-          {(app.reason || app.specialRequirements || app.medicalRequirements) && (
+          {app.reason && (
             <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Additional Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {app.reason && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Reason</p>
-                    <p className="text-sm text-slate-900 dark:text-white">{app.reason}</p>
-                  </div>
-                )}
-                {app.specialRequirements && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Special Requirements</p>
-                    <p className="text-sm text-slate-900 dark:text-white">{app.specialRequirements}</p>
-                  </div>
-                )}
-                {app.medicalRequirements && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Medical Requirements</p>
-                    <p className="text-sm text-slate-900 dark:text-white">{app.medicalRequirements}</p>
-                  </div>
-                )}
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Reason</p>
+                <p className="text-sm text-slate-900 dark:text-white">{app.reason}</p>
               </div>
             </div>
           )}

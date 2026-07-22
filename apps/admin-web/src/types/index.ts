@@ -211,11 +211,8 @@ export interface HostelApplication {
   preferredHostelId: string;
   preferredHostel: string;
   preferredRoomType: string;
-  academicYear: string;
   semester: string;
   reason?: string;
-  specialRequirements?: string;
-  medicalRequirements?: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Waitlisted' | 'Cancelled';
   appliedDate: string;
   reviewedBy?: string;

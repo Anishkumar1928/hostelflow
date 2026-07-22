@@ -25,7 +25,7 @@ export function StudentApplicationPage() {
   const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const [form, setForm] = useState({ preferredHostelId: '', preferredRoomType: '', reason: '', specialRequirements: '' });
+  const [form, setForm] = useState({ preferredHostelId: '', preferredRoomType: '', reason: '' });
 
   useEffect(() => {
     if (!user) return;
@@ -68,15 +68,15 @@ export function StudentApplicationPage() {
       studentId: profile.id, studentName: profile.name, course: profile.course, year: profile.year,
       preferredHostelId: form.preferredHostelId, preferredHostel: hostel?.name || '',
       preferredRoomType: form.preferredRoomType,
-      academicYear: '2024-2025', semester: profile.semester,
-      reason: form.reason || undefined, specialRequirements: form.specialRequirements || undefined,
+      semester: profile.semester,
+      reason: form.reason || undefined,
       appliedDate: new Date().toISOString().split('T')[0],
     });
     setSubmitting(false);
     if (res.success) {
       addToast('Application submitted successfully', 'success');
       setShowApply(false);
-      setForm({ preferredHostelId: '', preferredRoomType: '', reason: '', specialRequirements: '' });
+      setForm({ preferredHostelId: '', preferredRoomType: '', reason: '' });
       loadData(profile.id);
     } else {
       addToast(res.error || 'Failed to submit application', 'error');
@@ -138,7 +138,7 @@ export function StudentApplicationPage() {
                 { label: 'Course', value: activeApp.course },
                 { label: 'Year', value: activeApp.year },
                 { label: 'Semester', value: activeApp.semester },
-                { label: 'Academic Year', value: activeApp.academicYear },
+
               ].map(f => (
                 <div key={f.label} className="p-3 rounded-xl bg-gradient-to-br from-slate-500/10 to-slate-400/10">
                   <p className="text-[10px] text-slate-400 uppercase tracking-wider">{f.label}</p>
@@ -250,11 +250,7 @@ export function StudentApplicationPage() {
             <textarea value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} rows={3}
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none" />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Special Requirements</label>
-            <textarea value={form.specialRequirements} onChange={e => setForm({ ...form, specialRequirements: e.target.value })} rows={2}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none" />
-          </div>
+
           <div className="flex gap-3 pt-2">
             <button onClick={() => setShowApply(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
             <button onClick={handleApply} disabled={submitting || !form.preferredHostelId}
