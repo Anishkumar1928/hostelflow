@@ -126,7 +126,7 @@ export function AllocationDetailsPage() {
     if (transferBuildingId) {
       setTransferRoomId('');
       setTransferBedId('');
-      roomService.getByBuilding(transferBuildingId).then(res => {
+      roomService.getRoomsByBuilding(transferBuildingId).then(res => {
         if (res.success && res.data) setRooms(res.data.filter(r => !r.isDeleted && r.status !== 'Under Maintenance'));
       });
     }

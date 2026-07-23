@@ -76,11 +76,20 @@ export function CreateAllocationPage() {
   }, [selectedHostelId]);
 
   useEffect(() => {
+    console.log('[TRACE-1] useEffect fired. selectedBuildingId:', selectedBuildingId);
     if (selectedBuildingId) {
       setValue('roomId', '');
       setValue('bedId', '');
-      roomService.getByBuilding(selectedBuildingId).then(res => {
-        if (res.success && res.data) setRooms(res.data.filter(r => !r.isDeleted && r.status !== 'Under Maintenance'));
+      console.log('[TRACE-2] Calling getRoomsByBuilding with:', selectedBuildingId);
+      roomService.getRoomsByBuilding(selectedBuildingId).then(res => {
+        console.log('[TRACE-5] getRoomsByBuilding response:', JSON.stringify(res));
+        if (res.success && res.data) {
+          const filtered = res.data.filter(r => !r.isDeleted && r.status !== 'Under Maintenance');
+          console.log('[TRACE-6] Rooms after filter, before setRooms():', JSON.stringify(filtered));
+          setRooms(filtered);
+        } else {
+          console.log('[TRACE-6] No rooms in response. success:', res.success, 'data:', res.data);
+        }
       });
     }
   }, [selectedBuildingId]);
@@ -154,6 +163,12 @@ export function CreateAllocationPage() {
 
   const filteredBuildings = buildings.filter(b => !selectedHostelId || b.hostelId === selectedHostelId);
   const filteredRooms = rooms.filter(r => !selectedBuildingId || r.buildingId === selectedBuildingId);
+
+  console.log('[TRACE-7] rooms state:', rooms.length, 'filteredRooms:', filteredRooms.length, 'selectedBuildingId:', selectedBuildingId);
+  if (rooms.length > 0) {
+    console.log('[TRACE-7a] rooms sample:', JSON.stringify(rooms[0]));
+    console.log('[TRACE-7b] rooms[0].buildingId:', rooms[0].buildingId, '=== selectedBuildingId?', rooms[0].buildingId === selectedBuildingId);
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">

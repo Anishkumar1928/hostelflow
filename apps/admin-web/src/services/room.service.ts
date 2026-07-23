@@ -234,6 +234,32 @@ class RoomService extends BaseService<Room> {
     return this.getByField('buildingId', buildingId);
   }
 
+  async getRoomsByBuilding(buildingId: string) {
+    console.log('[TRACE-3] getRoomsByBuilding called with buildingId:', buildingId);
+    try {
+      const params = new URLSearchParams({ buildingId, limit: '100' });
+      const url = `/${this.resource}?${params.toString()}`;
+      console.log('[TRACE-4] HTTP request: GET /api/v1' + url);
+      const res = await (await import('../api/client')).api.get<Room[]>(url);
+      console.log('[TRACE-5a] API response success:', res.success);
+      if (res.success && res.data) {
+        const d = res.data as any;
+        console.log('[TRACE-5b] Raw res.data keys:', Object.keys(d));
+        console.log('[TRACE-5c] d.data length:', d.data?.length, 'd.length:', d?.length);
+        const items = mapApiRooms(d.data || d || []);
+        console.log('[TRACE-5d] Items after mapApiRooms count:', items.length, 'items:', JSON.stringify(items));
+        return { success: true, data: items };
+      } else {
+        console.log('[TRACE-5e] API returned no success/data. res:', JSON.stringify(res));
+      }
+    } catch (err) {
+      console.log('[TRACE-5f] API threw exception:', err);
+    }
+    const fallback = this.getAllFromStorage().filter(r => r.buildingId === buildingId && !r.isDeleted);
+    console.log('[TRACE-5g] Falling back to localStorage, found:', fallback.length);
+    return { success: true, data: fallback };
+  }
+
   async createWithBeds(data: Omit<Room, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>, roomNo: string) {
     const now = new Date().toISOString();
     const newRoom: Room = {
